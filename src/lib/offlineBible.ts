@@ -123,7 +123,7 @@ export function registerServiceWorker() {
 
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js')
+      .register('./sw.js')
       .then((reg) => {
         console.log('Service Worker registrado correctamente (Modo Offline activo):', reg.scope);
       })
