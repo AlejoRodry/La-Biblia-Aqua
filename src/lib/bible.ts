@@ -109,16 +109,37 @@ export async function getBibleData() {
   try {
     const res = await fetch('/api/bible');
     if (res.ok) {
-      rawData = await res.json();
-      if (Array.isArray(rawData) && rawData.length > 0) {
-        // Save to IndexedDB asynchronously for permanent offline storage
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        rawData = data;
         import('./offlineBible').then(({ saveBibleToIndexedDB }) => {
-          saveBibleToIndexedDB(rawData).catch(() => {});
-        }).catch(() => {});
+          saveBibleToIndexedDB(rawData).catch(() => { });
+        }).catch(() => { });
       }
     }
   } catch (err) {
-    console.info('Fetch /api/bible falló o está sin conexión. Accediendo al almacenamiento offline...', err);
+    console.info('Fetch /api/bible falló o está sin conexión. Probando origen remoto directo...', err);
+  }
+
+  // 1b. Fallback to direct GitHub raw data (for static hosts like GitHub Pages)
+  if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr.json');
+      if (res.ok) {
+        let text = await res.text();
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        text = text.replace(/[\n\r\t]/g, ' ').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+        const data = JSON.parse(text);
+        if (Array.isArray(data) && data.length > 0) {
+          rawData = data;
+          import('./offlineBible').then(({ saveBibleToIndexedDB }) => {
+            saveBibleToIndexedDB(rawData).catch(() => { });
+          }).catch(() => { });
+        }
+      }
+    } catch (e) {
+      console.info('Fetch remoto directo falló:', e);
+    }
   }
 
   // 2. Fallback to local IndexedDB if offline or network failed
@@ -425,7 +446,7 @@ const bookAliases: Record<string, string> = {
 function findMatchingBook(data: any[], bookQueryStr: string): any | null {
   const rawNorm = normalizeBookName(bookQueryStr);
   const mappedNorm = bookAliases[rawNorm] || rawNorm;
-  
+
   // 1. Exact match on normalized book name (e.g. "2reyes" === "2reyes", "juan" === "juan")
   let match = data.find((b: any) => normalizeBookName(b.name) === mappedNorm || normalizeBookName(b.name) === rawNorm);
   if (match) return match;
@@ -471,7 +492,7 @@ export async function searchBible(query: string): Promise<SearchResult> {
     trimmed = references[Math.floor(Math.random() * references.length)];
     isCuratedTheme = true;
   }
-  
+
   // Clean up common words like "capitulo", "versiculo"
   const cleanedQuery = trimmed
     .replace(/\b(?:cap[ií]tulo|cap|c)\b\.?\s*/gi, ' ')
@@ -482,7 +503,7 @@ export async function searchBible(query: string): Promise<SearchResult> {
   // Test if the query contains explicit chapter and/or verse numbers (e.g. "Juan 3:16", "Salmos 23", "1 Pedro 2", "2 Reyes capitulo 2", "2 Reyes 2")
   // Format: [Optional Book Prefix/Name] [ChapterNumber] [:VerseNumber] [-EndVerse]
   const referenceMatch = cleanedQuery.match(/^([1-3]?\s*[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)\s*(\d+)(?:[\s:,\.]+(\d+)(?:\s*-\s*(\d+))?)?$/);
-  
+
   if (referenceMatch) {
     const [_, bookStr, chapterStr, startVerseStr, endVerseStr] = referenceMatch;
     const book = findMatchingBook(data, bookStr);
@@ -490,14 +511,14 @@ export async function searchBible(query: string): Promise<SearchResult> {
     if (book) {
       const chapterIdx = parseInt(chapterStr, 10) - 1;
       const chapterData = book.chapters[chapterIdx];
-      
+
       if (chapterData) {
         const verses: Verse[] = [];
-        
+
         if (startVerseStr) {
           const startVerse = parseInt(startVerseStr, 10);
           const endVerse = endVerseStr ? parseInt(endVerseStr, 10) : startVerse;
-          
+
           if (startVerse >= 1 && startVerse <= chapterData.length && endVerse >= startVerse) {
             for (let i = startVerse; i <= Math.min(endVerse, chapterData.length); i++) {
               if (chapterData[i - 1]) {
@@ -525,10 +546,10 @@ export async function searchBible(query: string): Promise<SearchResult> {
         }
 
         if (verses.length > 0) {
-          const reference = startVerseStr 
+          const reference = startVerseStr
             ? (endVerseStr && endVerseStr !== startVerseStr ? `${book.name} ${chapterStr}:${startVerseStr}-${endVerseStr}` : `${book.name} ${chapterStr}:${startVerseStr}`)
             : `${book.name} ${chapterStr}`;
-            
+
           return {
             type: 'passage',
             query: isCuratedTheme ? query.trim() : trimmed,
