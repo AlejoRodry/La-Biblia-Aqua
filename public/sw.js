@@ -3,13 +3,13 @@ const DATA_CACHE_NAME = 'biblia-data-v1';
 const FONT_CACHE_NAME = 'biblia-fonts-v1';
 
 const STATIC_PRECACHE = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/manifest.json',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './manifest.json',
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -125,7 +125,7 @@ self.addEventListener('fetch', (event) => {
         }
 
         const cache = await caches.open(CACHE_NAME);
-        const cached = (await cache.match(event.request)) || (await cache.match('/index.html')) || (await cache.match('/'));
+        const cached = (await cache.match(event.request)) || (await cache.match('./index.html')) || (await cache.match('./')) || (await cache.match('/index.html'));
         if (cached) return cached;
 
         return new Response('Sin conexión', { status: 503, statusText: 'Offline' });
@@ -148,7 +148,7 @@ self.addEventListener('fetch', (event) => {
               cache.put(event.request, networkRes);
             }
           })
-          .catch(() => {});
+          .catch(() => { });
         return cached;
       }
 
