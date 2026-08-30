@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Montserrat:ital,wght@0,400;0,600;0,800;0,900;1,800;1,900&display=swap');
+@import "tailwindcss";
+
+.title-outline {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: inline-block;
+  position: relative;
+  text-transform: uppercase;
+  font-weight: 900;
+  line-height: 1.15;
+  padding: 0.05em 0.15em;
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath d='M0,50 C75,85 125,15 200,50 C275,85 325,15 400,50 L400,100 L0,100 Z' fill='rgba(255,255,255,0.95)'/%3E%3C/svg%3E") repeat-x;
+  background-size: 320px 100%;
+  background-position: 0 bottom;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textWave 8s linear infinite;
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes textWave {
+  from { background-position: 0px bottom; }
+  to { background-position: 320px bottom; }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+.watermark-chapter {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: fixed;
+  font-weight: 900;
+  line-height: 0.8;
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,25 C75,42 125,7 200,25 C275,42 325,7 400,25 L400,200 L0,200 Z' fill='rgba(255,255,255,0.12)'/%3E%3C/svg%3E") repeat-x;
+  background-size: 320px 200%;
+  background-position: var(--wave-x, 0px) var(--wave-y, 200%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  animation: watermarkWave 8s linear infinite;
+  will-change: background-position;
+}
+
+.watermark-chapter.bottom {
+  right: -2%;
+  bottom: -2%;
+  font-size: clamp(30vh, 50vh, 70vh);
+}
+
+.watermark-chapter.top {
+  left: 5%;
+  top: 5%;
+  font-size: clamp(25vh, 45vh, 65vh);
+  opacity: 0.8;
+}
+
+@keyframes watermarkWave {
+  from { background-position: 0px var(--wave-y, 200%); }
+  to { background-position: 320px var(--wave-y, 200%); }
+}
+
+
+.watermark-progress {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,100 C75,108 125,92 200,100 C275,108 325,92 400,100 L400,200 L0,200 Z' fill='rgba(165,243,252,0.3)'/%3E%3C/svg%3E") repeat-x;
+  background-size: 320px 200%;
+  background-position: 0px var(--wave-y, 0%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15);
+  animation: watermarkProgressWave 8s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes watermarkProgressWave {
+  from { background-position: 0px var(--wave-y, 0%); }
+  to { background-position: 320px var(--wave-y, 0%); }
+}
