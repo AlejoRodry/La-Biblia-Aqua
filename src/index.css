@@ -29,6 +29,26 @@
   to { background-position: 320px bottom; }
 }
 
+.chapter-number-wave {
+  display: inline-block;
+  position: relative;
+  font-weight: 900;
+  line-height: 1;
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath d='M0,50 C75,85 125,15 200,50 C275,85 325,15 400,50 L400,100 L0,100 Z' fill='rgba(255,255,255,0.95)'/%3E%3C/svg%3E") repeat-x;
+  background-size: 320px 100%;
+  background-position: 0 bottom;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textWave 8s linear infinite;
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

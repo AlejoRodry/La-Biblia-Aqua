@@ -1,18 +1,20 @@
-const CACHE_NAME = 'biblia-rvr1960-v1';
-const DATA_CACHE_NAME = 'biblia-data-v1';
-const FONT_CACHE_NAME = 'biblia-fonts-v1';
+const CACHE_NAME = 'biblia-rvr1960-v7';
+const DATA_CACHE_NAME = 'biblia-data-v2';
+const FONT_CACHE_NAME = 'biblia-fonts-v2';
 
 const STATIC_PRECACHE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './manifest.json',
+  './favicon.ico',
   './icon.svg',
   './icon-192.png',
   './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -31,7 +33,6 @@ self.addEventListener('install', (event) => {
       } catch (e) {
         // Will be cached on first user fetch
       }
-      return self.skipWaiting();
     })()
   );
 });
@@ -54,6 +55,16 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Bypass dev files and hot reload modules
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.includes('vite') ||
+    url.pathname.includes('node_modules')
+  ) {
+    return;
+  }
 
   // 1. API Calls (Bible text database)
   if (url.pathname === '/api/bible') {
@@ -109,7 +120,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Navigation requests (HTML pages)
+  // 3. Navigation requests (HTML pages) - Network first, fallback to cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
       (async () => {
@@ -134,39 +145,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Static assets (JS, CSS, SVG, PNG, icons)
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      const cached = await cache.match(event.request);
-
-      if (cached) {
-        // Revalidate in background if online
-        fetch(event.request)
-          .then((networkRes) => {
-            if (networkRes && networkRes.ok) {
-              cache.put(event.request, networkRes);
-            }
-          })
-          .catch(() => { });
-        return cached;
-      }
-
-      try {
-        const networkResponse = await fetch(event.request);
-        if (networkResponse && networkResponse.ok && event.request.method === 'GET') {
-          cache.put(event.request, networkResponse.clone());
+  // 4. Static assets - Network first with cache update, fallback to cache
+  if (event.request.method === 'GET') {
+    event.respondWith(
+      (async () => {
+        try {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse && networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          }
+        } catch (err) {
+          // Network failed, look in cache
         }
-        return networkResponse;
-      } catch (err) {
-        // Try match ignoring query params
+
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+
         const urlWithoutQuery = event.request.url.split('?')[0];
         const matchNoQuery = await cache.match(urlWithoutQuery);
         if (matchNoQuery) return matchNoQuery;
-        throw err;
-      }
-    })()
-  );
+
+        return new Response('Asset not found', { status: 404 });
+      })()
+    );
+  }
 });
 
 self.addEventListener('message', (event) => {

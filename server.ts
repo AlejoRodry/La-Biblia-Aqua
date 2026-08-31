@@ -7,6 +7,9 @@ async function startServer() {
   const PORT = 3000;
 
   // Service Worker and Manifest explicit routes with proper PWA headers
+  // Serve public directory for icons, manifest, favicon
+  app.use(express.static('public'));
+
   app.get('/sw.js', (_req, res) => {
     res.setHeader('Service-Worker-Allowed', '/');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -17,7 +20,7 @@ async function startServer() {
 
   app.get(['/manifest.webmanifest', '/manifest.json'], (_req, res) => {
     res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-    const publicPath = path.resolve(process.cwd(), 'public/manifest.webmanifest');
+    const publicPath = path.resolve(process.cwd(), 'public/manifest.json');
     res.sendFile(publicPath);
   });
 
@@ -59,9 +62,10 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static('dist'));
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      res.sendFile('dist/index.html', { root: '.' });
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 

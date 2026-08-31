@@ -1,69 +1,161 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0b172a" />
-      <stop offset="50%" stop-color="#0f2b48" />
-      <stop offset="100%" stop-color="#07111e" />
+    <!-- Ocean Blue App Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#009bff" />
+      <stop offset="40%" stop-color="#0088ff" />
+      <stop offset="100%" stop-color="#006ee8" />
     </linearGradient>
-    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffe259" />
-      <stop offset="100%" stop-color="#ffa751" />
+
+    <!-- Subtle bottom-left diagonal facet highlight -->
+    <linearGradient id="facetGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007df0" stop-opacity="0.9" />
+      <stop offset="35%" stop-color="#0088ff" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#0088ff" stop-opacity="0" />
     </linearGradient>
-    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f2fe" />
-      <stop offset="100%" stop-color="#4facfe" />
-    </linearGradient>
-    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
+
+    <!-- Outer B path (fillable solid) -->
+    <!-- Stem: x=72 to 168. Top lobe: x up to 418. Bottom lobe: x up to 452. Top: y=60, Bottom: y=452 -->
+    <clipPath id="bClip">
+      <path d="M 72 74
+               C 72 64, 80 58, 92 58
+               L 296 58
+               C 368 58, 418 94, 418 156
+               C 418 206, 386 238, 342 246
+               C 398 256, 452 292, 452 358
+               C 452 422, 402 454, 312 454
+               L 92 454
+               C 80 454, 72 448, 72 438
+               Z" />
+    </clipPath>
   </defs>
 
-  <!-- Base Rounded Card / App Icon Shape -->
-  <rect width="512" height="512" rx="112" fill="url(#bg-grad)" />
-  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="url(#cyan-glow)" stroke-width="3" opacity="0.3" />
+  <!-- 1. Background Rounded App Square -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)" />
 
-  <!-- Ambient background glow -->
-  <circle cx="256" cy="240" r="140" fill="#00f2fe" opacity="0.12" filter="url(#soft-glow)" />
+  <!-- 2. Bottom-left diagonal facet shadow/light cut (matching reference image) -->
+  <path d="M 0 330 L 260 512 L 0 512 Z" fill="url(#facetGrad)" opacity="0.45" />
+  <path d="M 0 512 L 420 512 L 0 240 Z" fill="#0066d6" opacity="0.12" />
 
-  <!-- Open Bible Symbol -->
-  <g transform="translate(0, 10)">
-    <!-- Book Pages / Spine Shadow -->
-    <path d="M 256 345 C 210 325 150 325 90 340 L 90 200 C 150 185 210 185 256 205 C 302 185 362 185 422 200 L 422 340 C 362 325 302 325 256 345 Z" fill="#05101d" opacity="0.5" />
-    
-    <!-- Left Page Base -->
-    <path d="M 256 335 C 210 315 155 315 96 330 L 96 185 C 155 170 210 170 256 190 Z" fill="#f8fafc" />
-    <path d="M 256 335 C 210 315 155 315 96 330 L 96 185 C 155 170 210 170 256 190 Z" fill="url(#gold-grad)" opacity="0.15" />
-    
-    <!-- Right Page Base -->
-    <path d="M 256 335 C 302 315 357 315 416 330 L 416 185 C 357 170 302 170 256 190 Z" fill="#ffffff" />
-    <path d="M 256 335 C 302 315 357 315 416 330 L 416 185 C 357 170 302 170 256 190 Z" fill="url(#gold-grad)" opacity="0.1" />
+  <!-- 3. Letter B Base Group -->
+  <g id="letterB">
+    <!-- Masked Interior of B -->
+    <g clip-path="url(#bClip)">
+      <!-- Background of B matches ocean backdrop -->
+      <rect x="50" y="40" width="420" height="430" fill="url(#bgGrad)" />
 
-    <!-- Page Edge Layers (3D depth) -->
-    <path d="M 96 330 C 155 315 210 315 256 335 L 256 342 C 210 322 155 322 96 337 Z" fill="#e2e8f0" />
-    <path d="M 416 330 C 357 315 302 315 256 335 L 256 342 C 302 322 357 322 416 337 Z" fill="#cbd5e1" />
-
-    <!-- Spine / Center seam -->
-    <path d="M 253 190 L 259 190 L 259 342 L 253 342 Z" fill="#0f172a" opacity="0.4" />
-    <!-- Red Ribbon Bookmark -->
-    <path d="M 253 190 Q 256 260 258 375 L 268 360 L 278 375 Q 262 260 259 190 Z" fill="#ef4444" />
-
-    <!-- Text Lines Simulation on Left Page -->
-    <line x1="130" y1="215" x2="225" y2="215" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity="0.4" />
-    <line x1="130" y1="235" x2="225" y2="235" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity="0.4" />
-    <line x1="130" y1="255" x2="225" y2="255" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity="0.4" />
-    <line x1="130" y1="275" x2="200" y2="275" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity="0.4" />
-    <line x1="130" y1="295" x2="215" y2="295" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" opacity="0.4" />
-
-    <!-- Latin Cross on Right Page -->
-    <g transform="translate(336, 255) scale(0.9)">
-      <!-- Vertical beam -->
-      <rect x="-6" y="-42" width="12" height="60" rx="3" fill="url(#gold-grad)" filter="url(#soft-glow)" />
-      <!-- Horizontal beam -->
-      <rect x="-24" y="-28" width="48" height="12" rx="3" fill="url(#gold-grad)" filter="url(#soft-glow)" />
+      <!-- The Water Wave Filling the Lower Half -->
+      <!-- Curves smoothly from left stem (y=298) upwards into a crest at y=190, then down to waist at y=215 -->
+      <path d="M 50 512
+               L 50 298
+               C 105 292, 160 262, 230 226
+               C 285 196, 345 186, 395 192
+               C 425 196, 445 204, 470 215
+               L 470 512
+               Z"
+            fill="#ffffff" />
+            
+      <!-- Water wave crest soft foam/lighting accent -->
+      <path d="M 50 298
+               C 105 292, 160 262, 230 226
+               C 285 196, 345 186, 395 192
+               C 425 196, 445 204, 470 215"
+            stroke="rgba(255, 255, 255, 0.9)"
+            stroke-width="5"
+            fill="none" />
     </g>
-  </g>
 
-  <!-- Wordmark 'BIBLIA' at the bottom of icon -->
-  <text x="256" y="440" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="900" letter-spacing="8" fill="#ffffff" opacity="0.95">BIBLIA</text>
+    <!-- 4. Top Counter (Hole): In the blue upper region -->
+    <path d="M 168 124
+             L 262 124
+             C 292 124, 312 136, 312 166
+             C 312 196, 292 208, 262 208
+             L 168 208
+             Z"
+          fill="url(#bgGrad)"
+          stroke="#ffffff"
+          stroke-width="13"
+          stroke-linejoin="round" />
+          
+    <!-- Inner subtle line on top counter -->
+    <path d="M 175 133 L 256 133 C 280 133, 300 144, 300 166 C 300 188, 280 199, 256 199 L 175 199"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="2.5"
+          opacity="0.8" />
+
+    <!-- 5. Bottom Counter (Hole): In the white water lower region -->
+    <!-- Pill / bullet shape (flat left, rounded semi-circle right) filled with blue ocean -->
+    <path d="M 168 304
+             L 262 304
+             C 288 304, 308 318, 308 340
+             C 308 362, 288 376, 262 376
+             L 168 376
+             Z"
+          fill="url(#bgGrad)"
+          stroke="#ffffff"
+          stroke-width="13"
+          stroke-linejoin="round" />
+
+    <!-- Inner subtle line on bottom counter -->
+    <path d="M 175 313 L 258 313 C 278 313, 296 324, 296 340 C 296 356, 278 367, 258 367 L 175 367"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="2.5"
+          opacity="0.8" />
+
+    <!-- 6. Outer Crisp White Contour of Letter B -->
+    <path d="M 72 74
+             C 72 64, 80 58, 92 58
+             L 296 58
+             C 368 58, 418 94, 418 156
+             C 418 206, 386 238, 342 246
+             C 398 256, 452 292, 452 358
+             C 452 422, 402 454, 312 454
+             L 92 454
+             C 80 454, 72 448, 72 438
+             Z"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="13"
+          stroke-linejoin="round"
+          stroke-linecap="round" />
+
+    <!-- 7. Inner Double-Contour Accents (The distinctive glassy water outline from the image) -->
+    <!-- Stem vertical inner stroke -->
+    <line x1="84" y1="82" x2="84" y2="430"
+          stroke="#ffffff"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.85" />
+
+    <!-- Top bar and top lobe inner curve -->
+    <path d="M 98 70
+             L 294 70
+             C 358 70, 404 102, 404 156
+             C 404 198, 376 226, 336 234"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.75" />
+
+    <!-- Bottom lobe inner curve -->
+    <path d="M 334 258
+             C 388 268, 438 300, 438 358
+             C 438 412, 392 442, 312 442
+             L 100 442"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.75" />
+
+    <!-- Bottom edge water highlight sheen -->
+    <path d="M 300 445 L 340 445"
+          stroke="#ffffff"
+          stroke-width="4"
+          stroke-linecap="round"
+          opacity="0.9" />
+  </g>
 </svg>

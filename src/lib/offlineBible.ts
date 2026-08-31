@@ -125,6 +125,20 @@ export function registerServiceWorker() {
     navigator.serviceWorker
       .register('./sw.js')
       .then((reg) => {
+        reg.update();
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        reg.addEventListener('updatefound', () => {
+          const installingWorker = reg.installing;
+          if (installingWorker) {
+            installingWorker.addEventListener('statechange', () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                installingWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          }
+        });
         console.log('Service Worker registrado correctamente (Modo Offline activo):', reg.scope);
       })
       .catch((err) => {

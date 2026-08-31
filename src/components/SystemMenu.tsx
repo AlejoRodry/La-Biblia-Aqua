@@ -338,43 +338,73 @@ export default function SystemMenu({
                     )}
 
                     <div className={`overflow-y-auto custom-scrollbar pr-2 flex-1 [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)] -my-4 py-4 ${uiStyle === 'dynamic' ? 'space-y-6' : 'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6'}`}>
-                      <div className="space-y-3">
-                        <div className={`text-sm uppercase tracking-widest ${uiStyle === 'dynamic' ? 'font-black italic text-[#81e6e6]/80' : 'font-medium text-white/50'}`}>
-                          Personalidad Visual
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <div className={`text-sm uppercase tracking-widest ${uiStyle === 'dynamic' ? 'font-black italic text-[#81e6e6]/80' : 'font-medium text-white/50'}`}>
+                            Personalidad Visual
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setUiStyle('serene')}
+                              className={`flex flex-col items-center justify-center p-4 text-sm transition-all group ${
+                                uiStyle === 'dynamic' ? 'border-2 skew-x-[-10deg]' : 'border rounded-xl'
+                              } ${
+                                uiStyle === 'serene' 
+                                  ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                                  : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                              }`}
+                            >
+                              <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}>
+                                <Sparkles size={24} className={uiStyle === 'serene' ? 'text-white' : 'text-white/50 group-hover:text-white transition-colors'} />
+                                <span className="font-light tracking-widest uppercase text-base">Sereno</span>
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setUiStyle('dynamic')}
+                              className={`flex flex-col items-center justify-center p-4 text-sm transition-all group ${
+                                uiStyle === 'dynamic' ? 'border-2 skew-x-[-10deg]' : 'border rounded-xl'
+                              } ${
+                                uiStyle === 'dynamic' 
+                                  ? 'bg-[#81e6e6]/25 border-[#81e6e6] text-[#81e6e6] shadow-[0_0_15px_rgba(129,230,230,0.3)]' 
+                                  : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                              }`}
+                            >
+                              <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}>
+                                <Palette size={24} className={uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white/50 group-hover:text-white transition-colors'} />
+                                <span className="font-black italic tracking-tighter uppercase text-base">Dinámico</span>
+                              </div>
+                            </button>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setUiStyle('serene')}
-                            className={`flex flex-col items-center justify-center p-4 text-sm transition-all group ${
-                              uiStyle === 'dynamic' ? 'border-2 skew-x-[-10deg]' : 'border rounded-xl'
-                            } ${
-                              uiStyle === 'serene' 
-                                ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-                                : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
-                            }`}
-                          >
-                            <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}>
-                              <Sparkles size={24} className={uiStyle === 'serene' ? 'text-white' : 'text-white/50 group-hover:text-white transition-colors'} />
-                              <span className="font-light tracking-widest uppercase text-base">Sereno</span>
-                            </div>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setUiStyle('dynamic')}
-                            className={`flex flex-col items-center justify-center p-4 text-sm transition-all group ${
-                              uiStyle === 'dynamic' ? 'border-2 skew-x-[-10deg]' : 'border rounded-xl'
-                            } ${
-                              uiStyle === 'dynamic' 
-                                ? 'bg-[#81e6e6]/25 border-[#81e6e6] text-[#81e6e6] shadow-[0_0_15px_rgba(129,230,230,0.3)]' 
-                                : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
-                            }`}
-                          >
-                            <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}>
-                              <Palette size={24} className={uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white/50 group-hover:text-white transition-colors'} />
-                              <span className="font-black italic tracking-tighter uppercase text-base">Dinámico</span>
-                            </div>
-                          </button>
+
+                        <div className={`space-y-3 ${uiStyle === 'dynamic' ? 'pt-4 border-t-2 border-white/10' : ''}`}>
+                          <div className={`text-sm uppercase tracking-widest ${uiStyle === 'dynamic' ? 'font-black italic text-[#81e6e6]/80' : 'font-medium text-white/50'}`}>
+                            Elementos
+                          </div>
+                          <label className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
+                            uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/60 border-2 border-transparent hover:border-white/20 skew-x-[-10deg] text-white/90' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                          }`}>
+                            <span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>Agua Animada</span>
+                            <input 
+                              type="checkbox" 
+                              checked={bgEnabled} 
+                              onChange={() => setBgEnabled(!bgEnabled)}
+                              className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
+                            />
+                          </label>
+                          <label className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
+                            uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/60 border-2 border-transparent hover:border-white/20 skew-x-[-10deg] text-white/90' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                          }`}>
+                            <span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>Partículas</span>
+                            <input 
+                              type="checkbox" 
+                              checked={particlesEnabled} 
+                              onChange={() => setParticlesEnabled(!particlesEnabled)}
+                              className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
+                            />
+                          </label>
                         </div>
                       </div>
 
@@ -409,34 +439,6 @@ export default function SystemMenu({
                             </button>
                           ))}
                         </div>
-                      </div>
-
-                      <div className={`space-y-3 ${uiStyle === 'dynamic' ? 'pt-4 border-t-2 border-white/10' : ''}`}>
-                        <div className={`text-sm uppercase tracking-widest ${uiStyle === 'dynamic' ? 'font-black italic text-[#81e6e6]/80' : 'font-medium text-white/50'}`}>
-                          Elementos
-                        </div>
-                        <label className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
-                          uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/60 border-2 border-transparent hover:border-white/20 skew-x-[-10deg] text-white/90' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                        }`}>
-                          <span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>Agua Animada</span>
-                          <input 
-                            type="checkbox" 
-                            checked={bgEnabled} 
-                            onChange={() => setBgEnabled(!bgEnabled)}
-                            className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
-                          />
-                        </label>
-                        <label className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
-                          uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/60 border-2 border-transparent hover:border-white/20 skew-x-[-10deg] text-white/90' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                        }`}>
-                          <span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>Partículas</span>
-                          <input 
-                            type="checkbox" 
-                            checked={particlesEnabled} 
-                            onChange={() => setParticlesEnabled(!particlesEnabled)}
-                            className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
-                          />
-                        </label>
                       </div>
                     </div>
                   </div>
@@ -542,11 +544,14 @@ export default function SystemMenu({
                         uiStyle === 'dynamic' ? 'bg-black/40 border-2 border-white/20 skew-x-[-10deg]' : 'rounded-xl border border-white/15 bg-black/20'
                       }`}>
                         <div className={`${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''} space-y-3`}>
-                          <div className="flex items-center gap-2.5">
-                            <Smartphone size={20} className={uiStyle === 'dynamic' ? 'text-[#ffea29]' : 'text-amber-300'} />
-                            <span className={`text-sm uppercase tracking-wide ${uiStyle === 'dynamic' ? 'font-black italic text-white' : 'font-semibold text-white/90'}`}>
-                              Instalar en Android
-                            </span>
+                          <div className="flex items-center gap-3">
+                            <img src="./icon-192.png" alt="Icono de La Biblia" className="w-10 h-10 rounded-xl shadow-md border border-white/20 shrink-0" referrerPolicy="no-referrer" />
+                            <div>
+                              <span className={`text-sm uppercase tracking-wide block ${uiStyle === 'dynamic' ? 'font-black italic text-white' : 'font-semibold text-white/90'}`}>
+                                Instalar en Android
+                              </span>
+                              <span className="text-[11px] text-white/50 block">Acceso rápido con icono acuático</span>
+                            </div>
                           </div>
 
                           <p className="text-xs sm:text-sm text-white/70 leading-relaxed">

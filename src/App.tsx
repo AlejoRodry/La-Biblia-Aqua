@@ -432,10 +432,10 @@ export default function App() {
           {result && (
             <button 
               onClick={handleBack}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold ${
+              className={`h-9 sm:h-10 flex items-center gap-1.5 px-3.5 sm:px-4 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold rounded-full ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
-                  : 'bg-black/25 hover:bg-black/45 border border-white/25 hover:border-white/50 rounded-full text-white'
+                  : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-white/40 text-white'
               }`}
               title="Volver a la búsqueda"
             >
@@ -445,7 +445,11 @@ export default function App() {
           )}
           <button 
             onClick={() => setSidebarOpen(true)}
-            className="p-2 sm:p-2.5 sm:p-3 bg-black/20 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-black/40 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+            className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 ${
+              uiStyle === 'dynamic'
+                ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
+                : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
+            }`}
             title="Libros y capítulos"
           >
             <Library size={18} />
@@ -480,7 +484,7 @@ export default function App() {
           {!isOnline && (
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+              className="h-9 sm:h-10 flex items-center gap-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95"
               title="Modo sin conexión activo - Pulsa para ver detalles"
             >
               <WifiOff size={13} />
@@ -490,23 +494,27 @@ export default function App() {
 
           <button 
             onClick={() => setShowReadingGuide(true)}
-            className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 ${
+            className={`h-9 sm:h-10 flex items-center gap-1.5 px-3.5 sm:px-4 backdrop-blur-md rounded-full border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold ${
               uiStyle === 'dynamic'
                 ? 'bg-black/80 hover:bg-[#e52b22] border-2 border-[#ffea29] text-[#ffea29] hover:text-white font-black italic -skew-x-12'
-                : 'bg-black/20 hover:bg-black/40 border border-white/20 hover:border-amber-400/50 rounded-full text-white'
+                : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-amber-400/50 text-white'
             }`}
             title="Guía de lectura, racha y estadísticas"
           >
             <Flame size={17} className={progressData.currentStreak > 0 ? (uiStyle === 'dynamic' ? 'text-[#ffea29] fill-[#ffea29]' : 'text-amber-400 fill-amber-400') : 'text-white/40'} />
-            <span className="text-xs sm:text-sm font-semibold tracking-wide">
+            <span className="tracking-wide">
               {progressData.currentStreak} {progressData.currentStreak === 1 ? 'día' : 'días'}
             </span>
           </button>
 
           <button 
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 sm:p-2.5 sm:p-3 bg-black/20 backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] ${
-              showSettings ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200' : 'border-white/20 hover:bg-black/40'
+            className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 ${
+              showSettings 
+                ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
+                : uiStyle === 'dynamic'
+                  ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
+                  : 'border-white/20 hover:border-white/40 bg-black/25 hover:bg-black/45'
             }`}
             title="Ajustes de la aplicación"
           >
@@ -514,7 +522,7 @@ export default function App() {
           </button>
         </div>
 
-        <div className={`flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 ${!result ? 'justify-center py-12' : 'justify-start pt-14 sm:pt-16 pb-12'}`}>
+        <div className={`flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 ${!result ? 'justify-center py-12' : 'justify-start pt-12 sm:pt-14 pb-12'}`}>
           <motion.div 
             animate={!result ? { y: [0, -10, 0] } : { y: 0 }}
             transition={!result ? { duration: 6, repeat: Infinity, ease: "easeInOut" } : { duration: 0 }}

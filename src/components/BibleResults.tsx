@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, BookOpen, ChevronRight, Filter, Sparkles, ChevronLeft, BookCheck, Search, X, Type, Copy, Check, Heart, MessageSquare } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Filter, Sparkles, ChevronLeft, ChevronDown, BookCheck, Search, X, Copy, Check, Heart, MessageSquare, Library } from 'lucide-react';
 import { SearchResult, Verse } from '../lib/bible';
-import TypographyControl from './TypographyControl';
 import { FONT_SIZES, LINE_HEIGHTS, FontSizeKey, LineHeightKey } from '../lib/typography';
 
 interface BibleResultsProps {
@@ -102,8 +101,8 @@ export default function BibleResults({
   onToggleChapterCompleted,
 }: BibleResultsProps) {
   const isKeywordSearch = result.type === 'keyword';
+  const isBookSearch = result.type === 'book';
   const [focusedVerse, setFocusedVerse] = useState<Verse | null>(null);
-  const [showTypographyMenu, setShowTypographyMenu] = useState(false);
   
   // State for keyword filtering & pagination
   const [selectedBookFilter, setSelectedBookFilter] = useState<string>('all');
@@ -257,7 +256,7 @@ export default function BibleResults({
           <filter id="clean-hollow-outline-3" x="-20%" y="-20%" width="140%" height="140%">
             <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="3" />
             <feComposite in="DILATED" in2="SourceAlpha" operator="out" result="OUTLINE" />
-            <feFlood floodColor="rgba(255,255,255,0.85)" result="COLOR" />
+            <feFlood floodColor="rgba(255,255,255,0.95)" result="COLOR" />
             <feComposite in="COLOR" in2="OUTLINE" operator="in" />
           </filter>
         </defs>
@@ -269,45 +268,91 @@ export default function BibleResults({
         onClick={() => setFocusedVerse(null)}
       />
 
-      {/* Chapter & Typography Navigation Bar */}
-      <div className={`flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 relative z-[90] mt-0 mb-4 sm:mb-6 transition-all duration-300 ${focusedVerse ? 'opacity-30 blur-sm pointer-events-none' : 'opacity-100'}`}>
-        {/* Chapter Navigation (Passage Mode) */}
-        {result.type === 'passage' && result.bookName && result.totalChapters && (
-          <div className="flex items-center gap-2.5">
-            {currentChapterNumber && currentChapterNumber > 1 && (
+      {/* Unified Chapter Navigation Capsule (Passage Mode) */}
+      {result.type === 'passage' && result.bookName && result.totalChapters && (
+        <div className={`flex items-center justify-center relative z-[90] mt-0 mb-1.5 sm:mb-2 transition-all duration-300 ${focusedVerse ? 'opacity-30 blur-sm pointer-events-none' : 'opacity-100'}`}>
+          <div className="relative">
+            <div className={`flex items-center backdrop-blur-md rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all p-0.5 sm:p-1 border ${
+              uiStyle === 'dynamic'
+                ? 'bg-black/80 border-2 border-white/80 transform -skew-x-12'
+                : 'bg-black/25 hover:bg-black/35 border-white/20 hover:border-white/35'
+            }`}>
+              {/* Previous Chapter button */}
               <button
-                onClick={() => onSearch(`${result.bookName} ${currentChapterNumber - 1}`)}
-                className="p-2.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl text-white/80 hover:text-white transition-all border border-white/10 hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.15)] active:scale-95"
-                title="Capítulo anterior"
+                onClick={() => currentChapterNumber && currentChapterNumber > 1 && onSearch(`${result.bookName} ${currentChapterNumber - 1}`)}
+                disabled={!currentChapterNumber || currentChapterNumber <= 1}
+                className={`p-1.5 sm:p-2 rounded-full text-white transition-all active:scale-95 flex items-center justify-center ${
+                  !currentChapterNumber || currentChapterNumber <= 1
+                    ? 'opacity-25 pointer-events-none'
+                    : 'hover:bg-white/15 active:bg-white/25'
+                }`}
+                title={currentChapterNumber && currentChapterNumber > 1 ? `Capítulo anterior: ${result.bookName} ${currentChapterNumber - 1}` : 'No hay capítulo anterior'}
               >
                 <ChevronLeft size={18} />
               </button>
-            )}
 
-            <div className="relative">
+              {/* Vertical divider */}
+              <div className="w-px h-4 bg-white/20 mx-0.5" />
+
+              {/* Current Book & Chapter Picker Toggle */}
               <button 
-                onClick={() => {
-                  setShowChapters(!showChapters);
-                  setShowTypographyMenu(false);
-                }}
-                className="px-4 py-2.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl text-white/90 hover:text-white transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)] border border-white/10 hover:border-white/20 flex items-center gap-2 active:scale-95 font-medium text-sm"
+                onClick={() => setShowChapters(!showChapters)}
+                className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-white transition-all text-xs sm:text-sm font-semibold active:scale-95 ${
+                  showChapters
+                    ? 'bg-white/20 text-cyan-200 shadow-inner'
+                    : 'hover:bg-white/15'
+                }`}
+                title="Seleccionar capítulo"
               >
-                <BookOpen size={16} className="text-cyan-400" /> Capítulos
+                <BookOpen size={15} className="text-cyan-300" />
+                <span>{result.bookName} {currentChapterNumber}</span>
+                <ChevronDown size={14} className={`text-white/60 transition-transform duration-200 ${showChapters ? 'rotate-180 text-cyan-300' : ''}`} />
               </button>
-              
-              <AnimatePresence>
-                {showChapters && result.totalChapters && (
+
+              {/* Vertical divider */}
+              <div className="w-px h-4 bg-white/20 mx-0.5" />
+
+              {/* Next Chapter button */}
+              <button
+                onClick={() => currentChapterNumber && currentChapterNumber < result.totalChapters && onSearch(`${result.bookName} ${currentChapterNumber + 1}`)}
+                disabled={!currentChapterNumber || currentChapterNumber >= result.totalChapters}
+                className={`p-1.5 sm:p-2 rounded-full text-white transition-all active:scale-95 flex items-center justify-center ${
+                  !currentChapterNumber || currentChapterNumber >= result.totalChapters
+                    ? 'opacity-25 pointer-events-none'
+                    : 'hover:bg-white/15 active:bg-white/25'
+                }`}
+                title={currentChapterNumber && currentChapterNumber < result.totalChapters ? `Capítulo siguiente: ${result.bookName} ${currentChapterNumber + 1}` : 'No hay capítulo siguiente'}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* Chapters Dropdown Modal */}
+            <AnimatePresence>
+              {showChapters && result.totalChapters && (
+                <>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 z-[140] bg-black/40 backdrop-blur-sm"
+                    onClick={() => setShowChapters(false)} 
+                  />
+
                   <motion.div
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 max-h-80 overflow-y-auto bg-blue-950/95 backdrop-blur-2xl border border-cyan-400/30 rounded-2xl p-4 shadow-2xl z-[150] custom-scrollbar"
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 max-h-80 flex flex-col bg-slate-950/40 backdrop-blur-2xl border border-white/20 rounded-2xl p-4 shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.25)] ring-1 ring-white/10 z-[150]"
                   >
-                    <div className="text-sm font-bold text-cyan-200 mb-3 sticky top-0 bg-blue-950/95 py-1 z-10 border-b border-white/10 flex justify-between items-center">
-                      <span>{result.bookName}</span>
-                      <span className="text-xs text-white/60 font-normal">{result.totalChapters} cap.</span>
+                    <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/15">
+                      <span className="text-white font-bold tracking-wide text-base">{result.bookName}</span>
+                      <span className="text-xs text-cyan-200/80 font-normal">{result.totalChapters} cap.</span>
                     </div>
-                    <div className="grid grid-cols-5 gap-2">
+
+                    <div className="overflow-y-auto custom-scrollbar pr-0.5 grid grid-cols-5 gap-2">
                       {Array.from({ length: result.totalChapters }).map((_, i) => {
                         const isCurrent = currentChapterNumber === i + 1;
                         return (
@@ -317,10 +362,10 @@ export default function BibleResults({
                               setShowChapters(false);
                               onSearch(`${result.bookName} ${i + 1}`);
                             }}
-                            className={`w-full aspect-square flex items-center justify-center rounded-lg text-sm transition-all font-medium ${
+                            className={`w-full aspect-square flex items-center justify-center rounded-xl text-sm transition-all font-semibold ${
                               isCurrent 
-                                ? 'bg-cyan-400 text-black font-bold shadow-[0_0_12px_rgba(34,211,238,0.6)]' 
-                                : 'bg-white/5 hover:bg-cyan-500/30 border border-white/10 text-white'
+                                ? 'bg-cyan-400 text-slate-950 font-black shadow-[0_0_14px_rgba(34,211,238,0.7),inset_0_1px_1px_rgba(255,255,255,0.8)] border border-white/80 scale-105' 
+                                : 'bg-white/[0.08] hover:bg-white/[0.2] active:bg-white/[0.3] backdrop-blur-md border border-white/15 hover:border-cyan-400/50 text-white/90 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95'
                             }`}
                           >
                             {i + 1}
@@ -329,79 +374,12 @@ export default function BibleResults({
                       })}
                     </div>
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {currentChapterNumber && currentChapterNumber < result.totalChapters && (
-              <button
-                onClick={() => onSearch(`${result.bookName} ${currentChapterNumber + 1}`)}
-                className="p-2.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl text-white/80 hover:text-white transition-all border border-white/10 hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.15)] active:scale-95"
-                title="Capítulo siguiente"
-              >
-                <ChevronRight size={18} />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Quick Typography Control Button (Aa) */}
-        {setReadingFontFamily && setReadingFontSize && setReadingLineHeight && (
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowTypographyMenu(!showTypographyMenu);
-                setShowChapters(false);
-              }}
-              className={`px-3.5 py-2.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl text-white/90 hover:text-white transition-all shadow-[0_8px_32px_rgba(0,0,0,0.15)] border flex items-center gap-1.5 active:scale-95 font-medium text-sm ${
-                showTypographyMenu 
-                  ? 'border-cyan-400 text-cyan-200 bg-cyan-950/50 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
-                  : 'border-white/10 hover:border-white/20'
-              }`}
-              title="Ajustes de tipo y tamaño de letra"
-            >
-              <Type size={16} className="text-cyan-400" />
-              <span className="font-bold tracking-tight">Aa</span>
-            </button>
-
-            <AnimatePresence>
-              {showTypographyMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-[90vw] max-w-sm sm:w-88 max-h-[78vh] overflow-y-auto bg-blue-950/95 backdrop-blur-2xl border border-cyan-400/30 rounded-2xl p-4 shadow-2xl z-[150] custom-scrollbar"
-                >
-                  <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
-                    <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm">
-                      <Type size={16} /> Ajustes de Letra
-                    </div>
-                    <button 
-                      onClick={() => setShowTypographyMenu(false)}
-                      className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-
-                  <TypographyControl
-                    readingFontFamily={readingFontFamily}
-                    setReadingFontFamily={setReadingFontFamily}
-                    readingFontSize={readingFontSize}
-                    setReadingFontSize={setReadingFontSize}
-                    readingLineHeight={readingLineHeight}
-                    setReadingLineHeight={setReadingLineHeight}
-                    numberFontFamily={numberFontFamily}
-                    setNumberFontFamily={setNumberFontFamily}
-                    showNumberFont={false}
-                    showPreview={false}
-                  />
-                </motion.div>
+                </>
               )}
             </AnimatePresence>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Giant Chapter Number Background (Filling Up) */}
       {result.type === 'passage' && currentChapterNumber && (
@@ -455,8 +433,8 @@ export default function BibleResults({
                     {result.bookShortcuts.map((book) => (
                       <button
                         key={book.name}
-                        onClick={() => onSearch(`${book.name} 1`)}
-                        className="group flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 hover:from-cyan-500/30 hover:to-blue-600/30 border border-cyan-400/40 hover:border-cyan-300 rounded-xl text-white text-xs md:text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95"
+                        onClick={() => onSearch(book.name)}
+                        className="group flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 hover:from-cyan-500/30 hover:to-blue-600/30 border border-cyan-400/40 hover:border-cyan-300 rounded-full text-white text-xs md:text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95"
                       >
                         <BookOpen size={14} className="text-cyan-300 group-hover:scale-110 transition-transform" />
                         <span className="font-semibold">{book.name}</span>
@@ -477,7 +455,7 @@ export default function BibleResults({
                   </span>
                   <button
                     onClick={() => { setTestamentFilter('all'); setSelectedBookFilter('all'); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                       testamentFilter === 'all'
                         ? 'bg-cyan-400 text-black font-bold shadow-[0_0_10px_rgba(34,211,238,0.5)]'
                         : 'bg-black/30 hover:bg-black/50 text-white/80 border border-white/10'
@@ -487,7 +465,7 @@ export default function BibleResults({
                   </button>
                   <button
                     onClick={() => { setTestamentFilter('OT'); setSelectedBookFilter('all'); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                       testamentFilter === 'OT'
                         ? 'bg-cyan-400 text-black font-bold shadow-[0_0_10px_rgba(34,211,238,0.5)]'
                         : 'bg-black/30 hover:bg-black/50 text-white/80 border border-white/10'
@@ -497,7 +475,7 @@ export default function BibleResults({
                   </button>
                   <button
                     onClick={() => { setTestamentFilter('NT'); setSelectedBookFilter('all'); }}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                       testamentFilter === 'NT'
                         ? 'bg-cyan-400 text-black font-bold shadow-[0_0_10px_rgba(34,211,238,0.5)]'
                         : 'bg-black/30 hover:bg-black/50 text-white/80 border border-white/10'
@@ -512,7 +490,7 @@ export default function BibleResults({
                   <span className="text-xs text-white/60 shrink-0 mr-1">Libro:</span>
                   <button
                     onClick={() => setSelectedBookFilter('all')}
-                    className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
                       selectedBookFilter === 'all'
                         ? 'bg-white text-black font-bold'
                         : 'bg-black/20 hover:bg-black/40 text-white/80 border border-white/10'
@@ -530,7 +508,7 @@ export default function BibleResults({
                       <button
                         key={bName}
                         onClick={() => setSelectedBookFilter(isSelected ? 'all' : bName)}
-                        className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                        className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
                           isSelected
                             ? 'bg-cyan-400 text-black font-bold shadow-[0_0_8px_rgba(34,211,238,0.4)]'
                             : 'bg-black/20 hover:bg-black/40 text-white/80 border border-white/10'
@@ -614,23 +592,78 @@ export default function BibleResults({
               </div>
             )}
           </div>
+        ) : isBookSearch ? (
+          /* ======================= BOOK CHAPTERS VIEW ======================= */
+          <div className="w-full relative px-2 sm:px-4">
+            <div className="bg-black/30 backdrop-blur-md border border-white/20 rounded-2xl p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
+              <div className="inline-flex items-center justify-center p-3 md:p-4 rounded-full bg-cyan-500/10 border border-cyan-400/20 mb-4 md:mb-6">
+                <Library size={24} className="text-cyan-400 md:w-8 md:h-8" />
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2 md:mb-4">
+                {result.bookName}
+              </h2>
+              <p className="text-white/70 text-sm md:text-base mb-6 md:mb-10 max-w-lg mx-auto">
+                Selecciona un capítulo para comenzar a leer
+              </p>
+              
+              <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2 md:gap-3 max-w-4xl mx-auto">
+                {Array.from({ length: result.totalChapters || 0 }).map((_, i) => {
+                  const chapterNum = i + 1;
+                  
+                  return (
+                    <button
+                      key={chapterNum}
+                      onClick={() => onSearch(`${result.bookName} ${chapterNum}`)}
+                      className={`relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 group ${
+                        uiStyle === 'dynamic' 
+                          ? 'bg-black/40 border-2 border-white/10 hover:border-[#ff0066]/50 hover:bg-[#ff0066]/10' 
+                          : 'bg-white/5 border border-white/10 hover:border-cyan-400/40 hover:bg-cyan-500/10'
+                      }`}
+                    >
+                      <span className={`text-lg md:text-xl transition-colors ${
+                        uiStyle === 'dynamic' ? 'font-black italic' : 'font-light'
+                      } text-white group-hover:text-cyan-300`}>
+                        {chapterNum}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         ) : (
           /* ======================= PASSAGE / CHAPTER VIEW ======================= */
           <div className="w-full relative px-2 sm:px-4">
             <div className="relative z-10 space-y-6 sm:space-y-8">
               <div className={`border-b border-white/20 pb-5 sm:pb-6 text-center transition-all duration-300 ${focusedVerse ? 'opacity-30 blur-sm pointer-events-none' : 'opacity-100'}`}>
                 
-                {/* Giant Chapter Number Outline */}
+                {/* Giant Chapter Number with Animated White Waves Inside and Clean Outer Outline */}
                 {currentChapterNumber && (
-                  <div 
-                    className="relative text-[6.5rem] min-[360px]:text-[8rem] sm:text-[12rem] md:text-[15rem] leading-none font-black select-none pointer-events-none transform -mb-4 sm:-mb-8 mt-0"
-                    style={{ 
-                      color: '#000',
-                      filter: 'url(#clean-hollow-outline-3)',
-                      fontFamily: numberFontFamily
-                    }}
-                  >
-                    {currentChapterNumber}
+                  <div className={`relative inline-flex items-center justify-center select-none pointer-events-none transform -mt-2 sm:-mt-4 mb-2 sm:mb-4 ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}>
+                    {/* 1. Outline Layer (Dilated 3px border, interior hollowed out) */}
+                    <div 
+                      className="absolute text-[6.5rem] min-[360px]:text-[8rem] sm:text-[11.5rem] md:text-[14rem] leading-none font-black whitespace-nowrap"
+                      style={{ 
+                        color: '#000',
+                        filter: 'url(#clean-hollow-outline-3)',
+                        fontFamily: numberFontFamily,
+                        padding: '0.05em 0.1em',
+                      }}
+                      aria-hidden="true"
+                    >
+                      {currentChapterNumber}
+                    </div>
+
+                    {/* 2. Wave Fill Layer (Animated white water waves flowing inside the number) */}
+                    <div 
+                      className="relative text-[6.5rem] min-[360px]:text-[8rem] sm:text-[11.5rem] md:text-[14rem] leading-none font-black whitespace-nowrap chapter-number-wave"
+                      style={{ 
+                        fontFamily: numberFontFamily,
+                        padding: '0.05em 0.1em',
+                      }}
+                    >
+                      {currentChapterNumber}
+                    </div>
                   </div>
                 )}
                 
@@ -692,28 +725,35 @@ export default function BibleResults({
               {/* Bottom chapter navigation */}
               {result.totalChapters && currentChapterNumber && (
                 <div className={`pt-10 border-t border-white/15 flex flex-wrap sm:flex-nowrap justify-between items-center gap-3 transition-all duration-300 ${focusedVerse ? 'opacity-30 blur-sm pointer-events-none' : 'opacity-100'}`}>
-                  {currentChapterNumber > 1 ? (
-                    <button
-                      onClick={() => onSearch(`${result.bookName} ${currentChapterNumber - 1}`)}
-                      className="flex items-center gap-2 text-white bg-black/30 hover:bg-black/50 border border-white/20 hover:border-cyan-300/40 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-95"
-                    >
-                      <ChevronLeft size={16} className="text-cyan-300" />
-                      <span>{result.bookName} {currentChapterNumber - 1}</span>
-                    </button>
-                  ) : <div className="hidden sm:block" />}
+                  {/* Previous Chapter button */}
+                  <button
+                    onClick={() => currentChapterNumber > 1 && onSearch(`${result.bookName} ${currentChapterNumber - 1}`)}
+                    disabled={currentChapterNumber <= 1}
+                    className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-md ${
+                      currentChapterNumber <= 1
+                        ? 'opacity-25 pointer-events-none border border-white/10 text-white/50 bg-black/10'
+                        : uiStyle === 'dynamic'
+                          ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
+                          : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-cyan-300/50 text-white'
+                    }`}
+                    title={currentChapterNumber > 1 ? `Capítulo anterior: ${result.bookName} ${currentChapterNumber - 1}` : 'Primer capítulo'}
+                  >
+                    <ChevronLeft size={16} className={currentChapterNumber > 1 ? "text-cyan-300" : "text-white/40"} />
+                    <span>{result.bookName} {Math.max(1, currentChapterNumber - 1)}</span>
+                  </button>
 
                   {/* Mark as read button */}
                   {onToggleChapterCompleted && result.bookName && (
                     <button
                       onClick={() => onToggleChapterCompleted(result.bookName!, currentChapterNumber)}
-                      className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-md ${
+                      className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-md ${
                         isChapterCompleted
                           ? (uiStyle === 'dynamic'
-                              ? 'bg-[#ffea29] text-black border-2 border-black font-black italic shadow-[3px_3px_0_rgba(0,0,0,0.5)]'
+                              ? 'bg-[#ffea29] text-black border-2 border-black font-black italic shadow-[3px_3px_0_rgba(0,0,0,0.5)] transform -skew-x-12'
                               : 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/50 shadow-[0_0_15px_rgba(52,211,153,0.3)]')
                           : (uiStyle === 'dynamic'
-                              ? 'bg-black/60 text-white/90 border-2 border-white/30 hover:border-[#ffea29] hover:text-[#ffea29]'
-                              : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/20 hover:border-white/40')
+                              ? 'bg-black/80 text-white/90 border-2 border-white/30 hover:border-[#ffea29] hover:text-[#ffea29] transform -skew-x-12'
+                              : 'bg-black/25 hover:bg-black/45 text-white/90 border border-white/20 hover:border-white/40')
                       }`}
                     >
                       <Check size={16} className={isChapterCompleted ? (uiStyle === 'dynamic' ? 'text-black stroke-[3]' : 'text-emerald-300 stroke-[2.5]') : 'opacity-60'} />
@@ -721,15 +761,22 @@ export default function BibleResults({
                     </button>
                   )}
 
-                  {currentChapterNumber < result.totalChapters ? (
-                    <button
-                      onClick={() => onSearch(`${result.bookName} ${currentChapterNumber + 1}`)}
-                      className="flex items-center gap-2 text-white bg-black/30 hover:bg-black/50 border border-white/20 hover:border-cyan-300/40 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-95"
-                    >
-                      <span>{result.bookName} {currentChapterNumber + 1}</span>
-                      <ChevronRight size={16} className="text-cyan-300" />
-                    </button>
-                  ) : <div className="hidden sm:block" />}
+                  {/* Next Chapter button */}
+                  <button
+                    onClick={() => currentChapterNumber < result.totalChapters && onSearch(`${result.bookName} ${currentChapterNumber + 1}`)}
+                    disabled={currentChapterNumber >= result.totalChapters}
+                    className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.3)] backdrop-blur-md ${
+                      currentChapterNumber >= result.totalChapters
+                        ? 'opacity-25 pointer-events-none border border-white/10 text-white/50 bg-black/10'
+                        : uiStyle === 'dynamic'
+                          ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
+                          : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-cyan-300/50 text-white'
+                    }`}
+                    title={currentChapterNumber < result.totalChapters ? `Capítulo siguiente: ${result.bookName} ${currentChapterNumber + 1}` : 'Último capítulo'}
+                  >
+                    <span>{result.bookName} {Math.min(result.totalChapters, currentChapterNumber + 1)}</span>
+                    <ChevronRight size={16} className={currentChapterNumber < result.totalChapters ? "text-cyan-300" : "text-white/40"} />
+                  </button>
                 </div>
               )}
             </div>

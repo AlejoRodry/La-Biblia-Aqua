@@ -1,4 +1,4 @@
-export type SearchType = 'passage' | 'keyword';
+export type SearchType = 'passage' | 'keyword' | 'book';
 
 export interface Verse {
   book_id: string;
@@ -570,20 +570,12 @@ export async function searchBible(query: string): Promise<SearchResult> {
   // --- Check if the query is directly a book name without numbers (e.g. "2 Reyes", "Habacuc", "Salmos") ---
   const directBook = findMatchingBook(data, trimmed);
   if (directBook && directBook.chapters[0]) {
-    const verses: Verse[] = directBook.chapters[0].map((text: string, i: number) => ({
-      book_id: directBook.abbrev,
-      book_name: directBook.name,
-      chapter: 1,
-      verse: i + 1,
-      text
-    }));
-
     return {
-      type: 'passage',
+      type: 'book',
       query: trimmed,
-      reference: `${directBook.name} 1`,
-      verses,
-      text: verses.map(v => v.text).join(' '),
+      reference: directBook.name,
+      verses: [],
+      text: "",
       translation_id: 'rvr',
       translation_name: 'Reina Valera 1960',
       translation_note: 'Dominio Público',
