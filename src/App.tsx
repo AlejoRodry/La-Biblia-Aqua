@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Search, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, History, Sparkles, Settings, Sun, Moon, Sunrise, Sunset, BookOpen, Library, X, RotateCw, Type, Palette, Flame, BarChart2, WifiOff } from 'lucide-react';
+import { Search, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, History, Sparkles, Settings, Sun, Moon, Sunrise, Sunset, BookOpen, Library, X, RotateCw, Type, Palette, Flame, BarChart2, WifiOff, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import WaterBackground, { WaterTheme } from './components/WaterBackground';
 import PersonaBibleMenu from './components/PersonaBibleMenu';
@@ -12,6 +12,7 @@ import BibleResults from './components/BibleResults';
 import SystemMenu from './components/SystemMenu';
 import TypographyControl from './components/TypographyControl';
 import ReadingGuideModal from './components/ReadingGuideModal';
+import BookmarksModal from './components/BookmarksModal';
 import { FontSizeKey, LineHeightKey } from './lib/typography';
 import { 
   loadReadingProgress, 
@@ -105,6 +106,7 @@ export default function App() {
   const [timeMode, setTimeMode] = useState<'auto' | WaterTheme>(() => (localStorage.getItem('bible_time_mode') as 'auto' | WaterTheme) || 'auto');
   const [activeTheme, setActiveTheme] = useState<WaterTheme>('night');
   const [showSettings, setShowSettings] = useState(false);
+  const [showBookmarks, setShowBookmarks] = useState(false);
   const [showChapters, setShowChapters] = useState(false);
   const [bgEnabled, setBgEnabled] = useState(() => localStorage.getItem('bible_bg_enabled') !== 'false');
   const [particlesEnabled, setParticlesEnabled] = useState(() => localStorage.getItem('bible_particles_enabled') !== 'false');
@@ -428,32 +430,88 @@ export default function App() {
         style={{ display: sidebarOpen ? 'none' : 'block' }}
       >
         {/* Top Navigation Bar: Left (Back / Library) & Right (Streak / Settings) */}
-        <div className="absolute top-3.5 sm:top-5 left-3 sm:left-6 z-40 flex items-center gap-2">
-          {result && (
+        <div className="absolute top-3.5 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 z-40 flex items-start justify-between pointer-events-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
+            {result && (
+              <button 
+                onClick={handleBack}
+                className={`h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold rounded-full ${
+                  uiStyle === 'dynamic'
+                    ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
+                    : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-white/40 text-white'
+                }`}
+                title="Volver a la búsqueda"
+              >
+                <ArrowLeft size={16} />
+                <span className="hidden min-[380px]:inline">Buscar</span>
+              </button>
+            )}
             <button 
-              onClick={handleBack}
-              className={`h-9 sm:h-10 flex items-center gap-1.5 px-3.5 sm:px-4 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold rounded-full ${
+              onClick={() => setSidebarOpen(true)}
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 uiStyle === 'dynamic'
-                  ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
-                  : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-white/40 text-white'
+                  ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
+                  : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
               }`}
-              title="Volver a la búsqueda"
+              title="Libros y capítulos"
             >
-              <ArrowLeft size={16} />
-              <span>Buscar</span>
+              <Library size={18} />
             </button>
-          )}
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 ${
-              uiStyle === 'dynamic'
-                ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
-                : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
-            }`}
-            title="Libros y capítulos"
-          >
-            <Library size={18} />
-          </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-3 pointer-events-auto">
+            {!isOnline && (
+              <button
+                onClick={() => setShowSettings(true)}
+                className="h-9 sm:h-10 flex items-center gap-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95 shrink-0"
+                title="Modo sin conexión activo - Pulsa para ver detalles"
+              >
+                <WifiOff size={13} />
+                <span className="hidden min-[420px]:inline">Offline</span>
+              </button>
+            )}
+
+            <button 
+              onClick={() => setShowReadingGuide(true)}
+              className={`h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md rounded-full border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold shrink-0 ${
+                uiStyle === 'dynamic'
+                  ? 'bg-black/80 hover:bg-[#e52b22] border-2 border-[#ffea29] text-[#ffea29] hover:text-white font-black italic -skew-x-12'
+                  : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-amber-400/50 text-white'
+              }`}
+              title="Guía de lectura, racha y estadísticas"
+            >
+              <Flame size={17} className={progressData.currentStreak > 0 ? (uiStyle === 'dynamic' ? 'text-[#ffea29] fill-[#ffea29]' : 'text-amber-400 fill-amber-400') : 'text-white/40'} />
+              <span className="tracking-wide">
+                {progressData.currentStreak} <span className="hidden min-[400px]:inline">{progressData.currentStreak === 1 ? 'día' : 'días'}</span>
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setShowBookmarks(true)}
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+                uiStyle === 'dynamic'
+                  ? 'bg-black/80 hover:bg-[#ff0066] hover:text-white border-2 border-white/80'
+                  : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
+              }`}
+              title="Mis Favoritos"
+            >
+              <Heart size={18} />
+            </button>
+            
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+                showSettings 
+                  ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
+                  : uiStyle === 'dynamic'
+                    ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
+                    : 'border-white/20 hover:border-white/40 bg-black/25 hover:bg-black/45'
+              }`}
+              title="Ajustes de la aplicación"
+            >
+              <Settings size={18} className={showSettings ? 'rotate-90 transition-transform text-cyan-300' : 'transition-transform'} />
+            </button>
+          </div>
         </div>
 
         <SystemMenu
@@ -479,50 +537,7 @@ export default function App() {
           setUiStyle={setUiStyle}
         />
 
-        {/* Streak / Reading Guide Badge & Settings Toggle */}
-        <div className="absolute top-3.5 sm:top-5 right-3 sm:right-6 z-50 flex items-center gap-2 sm:gap-3">
-          {!isOnline && (
-            <button
-              onClick={() => setShowSettings(true)}
-              className="h-9 sm:h-10 flex items-center gap-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95"
-              title="Modo sin conexión activo - Pulsa para ver detalles"
-            >
-              <WifiOff size={13} />
-              <span className="hidden min-[420px]:inline">Offline</span>
-            </button>
-          )}
-
-          <button 
-            onClick={() => setShowReadingGuide(true)}
-            className={`h-9 sm:h-10 flex items-center gap-1.5 px-3.5 sm:px-4 backdrop-blur-md rounded-full border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold ${
-              uiStyle === 'dynamic'
-                ? 'bg-black/80 hover:bg-[#e52b22] border-2 border-[#ffea29] text-[#ffea29] hover:text-white font-black italic -skew-x-12'
-                : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-amber-400/50 text-white'
-            }`}
-            title="Guía de lectura, racha y estadísticas"
-          >
-            <Flame size={17} className={progressData.currentStreak > 0 ? (uiStyle === 'dynamic' ? 'text-[#ffea29] fill-[#ffea29]' : 'text-amber-400 fill-amber-400') : 'text-white/40'} />
-            <span className="tracking-wide">
-              {progressData.currentStreak} {progressData.currentStreak === 1 ? 'día' : 'días'}
-            </span>
-          </button>
-
-          <button 
-            onClick={() => setShowSettings(!showSettings)}
-            className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 ${
-              showSettings 
-                ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
-                : uiStyle === 'dynamic'
-                  ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
-                  : 'border-white/20 hover:border-white/40 bg-black/25 hover:bg-black/45'
-            }`}
-            title="Ajustes de la aplicación"
-          >
-            <Settings size={18} className={showSettings ? 'rotate-90 transition-transform text-cyan-300' : 'transition-transform'} />
-          </button>
-        </div>
-
-        <div className={`flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 ${!result ? 'justify-center py-12' : 'justify-start pt-12 sm:pt-14 pb-12'}`}>
+        <div className={`flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 ${!result ? 'justify-center py-12' : 'justify-start pt-24 sm:pt-28 pb-12'}`}>
           <motion.div 
             animate={!result ? { y: [0, -10, 0] } : { y: 0 }}
             transition={!result ? { duration: 6, repeat: Infinity, ease: "easeInOut" } : { duration: 0 }}
@@ -763,6 +778,18 @@ export default function App() {
           handleSearch(undefined, `${book} ${chapter}`);
         }}
         onToggleChapter={handleToggleChapterCompleted}
+        uiStyle={uiStyle}
+        activeTheme={activeTheme}
+        bgEnabled={bgEnabled}
+        particlesEnabled={particlesEnabled}
+      />
+      
+      <BookmarksModal
+        isOpen={showBookmarks}
+        onClose={() => setShowBookmarks(false)}
+        annotations={annotations}
+        onSelectVerse={(reference) => handleSearch(undefined, reference)}
+        onRemoveBookmark={handleToggleBookmark}
         uiStyle={uiStyle}
         activeTheme={activeTheme}
         bgEnabled={bgEnabled}
