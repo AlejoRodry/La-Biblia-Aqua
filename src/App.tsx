@@ -93,6 +93,19 @@ function getRandomSelection(count = 5): string[] {
   return shuffled.slice(0, count);
 }
 
+const DAILY_VERSES = [
+  { ref: 'Juan 3:16', text: 'Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.' },
+  { ref: 'Filipenses 4:13', text: 'Todo lo puedo en Cristo que me fortalece.' },
+  { ref: 'Salmos 23:1', text: 'Jehová es mi pastor; nada me faltará.' },
+  { ref: 'Romanos 8:28', text: 'Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados.' },
+  { ref: 'Jeremías 29:11', text: 'Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis.' },
+  { ref: 'Isaías 41:10', text: 'No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia.' },
+  { ref: 'Proverbios 3:5-6', text: 'Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.' },
+  { ref: 'Mateo 11:28', text: 'Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.' },
+  { ref: 'Josué 1:9', text: 'Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas.' },
+  { ref: 'Salmos 46:1', text: 'Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.' }
+];
+
 export default function App() {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<any>(null);
@@ -132,7 +145,7 @@ export default function App() {
     });
   }, []);
 
-  const [annotations, setAnnotations] = useState<Record<string, { isBookmarked?: boolean; comment?: string }>>(() => {
+  const [annotations, setAnnotations] = useState<Record<string, { isBookmarked?: boolean; comment?: string; highlightColor?: string }>>(() => {
     try {
       const stored = localStorage.getItem('bible_annotations');
       return stored ? JSON.parse(stored) : {};
@@ -152,6 +165,19 @@ export default function App() {
         ...prev,
         [verseId]: { ...current, isBookmarked: !current.isBookmarked }
       };
+    });
+  };
+
+  const handleSaveHighlight = (verseId: string, color: string | undefined) => {
+    setAnnotations(prev => {
+      const current = prev[verseId] || {};
+      const updated = { ...current };
+      if (color) {
+        updated.highlightColor = color;
+      } else {
+        delete updated.highlightColor;
+      }
+      return { ...prev, [verseId]: updated };
     });
   };
 
@@ -275,6 +301,12 @@ export default function App() {
     else if (hour >= 17 && hour < 20) setActiveTheme('sunset');
     else setActiveTheme('night');
   }, [timeMode]);
+
+  const verseOfTheDay = React.useMemo(() => {
+    // Math.floor(Date.now() / 86400000) gets the current day number
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    return DAILY_VERSES[dayIndex % DAILY_VERSES.length];
+  }, []);
 
   const handleSearch = async (e?: React.FormEvent, directQuery?: string) => {
     if (e) e.preventDefault();
@@ -541,7 +573,7 @@ export default function App() {
           <motion.div 
             animate={!result ? { y: [0, -10, 0] } : { y: 0 }}
             transition={!result ? { duration: 6, repeat: Infinity, ease: "easeInOut" } : { duration: 0 }}
-            className={`w-full max-w-2xl flex flex-col items-center justify-center ${!result ? 'min-h-[75vh] sm:min-h-[82vh] space-y-6 sm:space-y-8 my-auto' : 'space-y-6'}`}
+            className={`w-full max-w-2xl flex flex-col items-center justify-center ${!result ? 'space-y-6 sm:space-y-8 mt-4 sm:mt-8 mb-8 sm:mb-12' : 'space-y-6'}`}
           >
             {/* Header & Search Bar (Only shown when there are no results) */}
           {!result && (
@@ -653,6 +685,7 @@ export default function App() {
               annotations={annotations}
               onToggleBookmark={handleToggleBookmark}
               onSaveComment={handleSaveComment}
+              onSaveHighlight={handleSaveHighlight}
               onSearch={(targetQuery) => handleSearch(undefined, targetQuery)}
               onBack={handleBack}
               showChapters={showChapters}
@@ -684,8 +717,29 @@ export default function App() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-            className="w-full max-w-3xl mt-0 mb-8"
+            className="w-full max-w-3xl mt-0 mb-8 flex flex-col gap-6"
           >
+            {/* Verse of the Day */}
+            <div 
+              onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
+              className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles size={16} className="text-cyan-300" />
+                    <span className="text-xs font-bold tracking-widest text-cyan-200 uppercase">Versículo del Día</span>
+                  </div>
+                  <p className="text-white text-lg sm:text-xl font-medium leading-relaxed mb-3 drop-shadow-md">"{verseOfTheDay.text}"</p>
+                  <p className="text-white/60 font-semibold text-sm">— {verseOfTheDay.ref}</p>
+                </div>
+                <div className="hidden sm:flex shrink-0 bg-white/10 group-hover:bg-cyan-500/20 p-3 rounded-full transition-colors">
+                  <ArrowRight size={20} className="text-white group-hover:text-cyan-300 transition-colors" />
+                </div>
+              </div>
+            </div>
+
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* History */}
               <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">

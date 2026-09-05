@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, BookOpen, ChevronRight, Filter, Sparkles, ChevronLeft, ChevronDown, BookCheck, Search, X, Copy, Check, Heart, MessageSquare, Library } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Filter, Sparkles, ChevronLeft, ChevronDown, BookCheck, Search, X, Copy, Check, Heart, MessageSquare, Library, Play, Square, Volume2 } from 'lucide-react';
 import { SearchResult, Verse } from '../lib/bible';
 import { FONT_SIZES, LINE_HEIGHTS, FontSizeKey, LineHeightKey } from '../lib/typography';
 
@@ -19,9 +19,10 @@ interface BibleResultsProps {
   numberFontFamily?: string;
   setNumberFontFamily?: (font: string) => void;
   uiStyle?: 'serene' | 'dynamic';
-  annotations?: Record<string, { isBookmarked?: boolean; comment?: string }>;
+  annotations?: Record<string, { isBookmarked?: boolean; comment?: string; highlightColor?: string }>;
   onToggleBookmark?: (verseId: string) => void;
   onSaveComment?: (verseId: string, comment: string) => void;
+  onSaveHighlight?: (verseId: string, color: string | undefined) => void;
   isChapterCompleted?: boolean;
   onToggleChapterCompleted?: (bookName: string, chapter: number) => void;
 }
@@ -97,6 +98,7 @@ export default function BibleResults({
   annotations,
   onToggleBookmark,
   onSaveComment,
+  onSaveHighlight,
   isChapterCompleted = false,
   onToggleChapterCompleted,
 }: BibleResultsProps) {
@@ -145,9 +147,50 @@ export default function BibleResults({
     return filteredVerses.slice(0, visibleCount);
   }, [filteredVerses, isKeywordSearch, visibleCount]);
 
+  const HIGHLIGHT_STYLES: Record<string, string> = {
+    yellow: 'bg-yellow-400/30 text-yellow-50',
+    green: 'bg-emerald-400/30 text-emerald-50',
+    pink: 'bg-pink-400/30 text-pink-50',
+  };
+
   const [copiedVerse, setCopiedVerse] = useState(false);
   const [isEditingComment, setIsEditingComment] = useState(false);
   const [commentText, setCommentText] = useState("");
+  
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  
+  useEffect(() => {
+    // Stop audio if the user navigates away or result changes
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [result]);
+  
+  const handleToggleAudio = () => {
+    if (!('speechSynthesis' in window)) {
+      alert("Tu dispositivo no soporta la lectura en voz alta.");
+      return;
+    }
+    
+    if (isPlayingAudio) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+      return;
+    }
+    
+    // Combine all verses into a single readable string
+    const fullText = result.verses.map(v => v.text).join(' ');
+    const utterance = new SpeechSynthesisUtterance(fullText);
+    utterance.lang = 'es-ES'; // Set language to Spanish
+    
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => setIsPlayingAudio(false);
+    
+    setIsPlayingAudio(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (focusedVerse && annotations) {
@@ -678,6 +721,17 @@ export default function BibleResults({
                   <span className="text-white/70 text-xs md:text-sm">
                     {result.verses.length} {result.verses.length === 1 ? 'versículo' : 'versículos'}
                   </span>
+                  
+                  {/* TTS Play Button */}
+                  <span className="text-white/40">•</span>
+                  <button 
+                    onClick={handleToggleAudio}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${isPlayingAudio ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}
+                    title={isPlayingAudio ? "Detener lectura" : "Escuchar capítulo en voz alta"}
+                  >
+                    {isPlayingAudio ? <Square size={12} className="fill-current" /> : <Play size={12} className="fill-current" />}
+                    <span className="hidden min-[380px]:inline">{isPlayingAudio ? 'Detener' : 'Escuchar'}</span>
+                  </button>
                 </div>
               </div>
               
@@ -685,6 +739,10 @@ export default function BibleResults({
                 {result.verses.map((verse: Verse, i: number) => {
                   const isFocused = focusedVerse === verse;
                   const isDimmed = focusedVerse && !isFocused;
+                  
+                  const verseAnnotation = annotations?.[`${result.bookName} ${currentChapterNumber}:${verse.verse}`];
+                  const highlightColor = verseAnnotation?.highlightColor;
+                  const highlightClasses = highlightColor ? HIGHLIGHT_STYLES[highlightColor] : '';
                   
                   return (
                   <p 
@@ -699,22 +757,24 @@ export default function BibleResults({
                       fontSize: currentSizeOption.fontSizeRem,
                       lineHeight: currentLineHeightOption.value,
                     }}
-                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3 ${
+                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3 ${highlightClasses} ${
                       isFocused 
                         ? 'text-cyan-100 bg-white/10 scale-[1.02] relative z-[70] shadow-2xl ring-1 ring-cyan-400/30' 
                         : isDimmed
                         ? 'text-white/30 blur-[2px] relative z-[60]'
-                        : 'text-white hover:text-cyan-100 hover:bg-white/5'
+                        : highlightClasses
+                          ? '' // Keep the highlight text color
+                          : 'text-white hover:text-cyan-100 hover:bg-white/5'
                     }`}
                   >
                     <sup className="text-cyan-200 font-bold mr-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] select-none text-[0.7em] align-super">
                       {verse.verse}
                     </sup>
                     {verse.text}
-                    {annotations && annotations[`${result.bookName} ${currentChapterNumber}:${verse.verse}`]?.isBookmarked && (
+                    {verseAnnotation?.isBookmarked && (
                       <Heart size={14} className="inline-block ml-3 mb-1 text-rose-400 fill-rose-400 opacity-80" />
                     )}
-                    {annotations && annotations[`${result.bookName} ${currentChapterNumber}:${verse.verse}`]?.comment && (
+                    {verseAnnotation?.comment && (
                       <MessageSquare size={14} className="inline-block ml-2 mb-1 text-amber-300 opacity-80" />
                     )}
                   </p>
@@ -791,17 +851,17 @@ export default function BibleResults({
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[95vw] sm:max-w-[85vw] md:max-w-[600px] w-full min-w-[320px] ${
+            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[600px] w-fit ${
               uiStyle === 'dynamic' 
                 ? 'bg-black/95 border-2 border-[#ff0066]/50 rounded-xl backdrop-blur-md' 
                 : 'bg-black/30 backdrop-blur-md border border-white/20 rounded-[2rem]'
             }`}
           >
-            <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               
               {/* Verse Reference */}
-              <div className={`flex items-center gap-2 pr-2 sm:pr-3 border-r ${uiStyle === 'dynamic' ? 'border-[#ff0066]/30' : 'border-white/15'}`}>
-                <span className={`text-xs sm:text-sm whitespace-nowrap ${
+              <div className={`flex items-center pr-1.5 sm:pr-3 border-r min-w-0 shrink-1 ${uiStyle === 'dynamic' ? 'border-[#ff0066]/30' : 'border-white/15'}`}>
+                <span className={`text-[11px] min-[380px]:text-xs sm:text-sm whitespace-nowrap truncate ${
                   uiStyle === 'dynamic' ? 'text-[#00e5ff] font-black uppercase tracking-wider' : 'text-cyan-200 font-semibold tracking-wide'
                 }`}>
                   {focusedVerse.book_name} {focusedVerse.chapter}:{focusedVerse.verse}
@@ -809,12 +869,12 @@ export default function BibleResults({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end">
+              <div className="flex items-center gap-0.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => handleNavigateVerse('prev')}
                   disabled={focusedVerseIndex <= 0}
-                  className={`p-2 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                  className={`p-1.5 sm:p-2 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                     uiStyle === 'dynamic'
                       ? 'rounded-md border-2 bg-black hover:bg-[#ff0066]/20 border-white/10 hover:border-[#ff0066]/50 text-white'
                       : 'rounded-full bg-black/30 hover:bg-black/50 border border-white/10 text-white'
@@ -828,7 +888,7 @@ export default function BibleResults({
                   type="button"
                   onClick={() => handleNavigateVerse('next')}
                   disabled={focusedVerseIndex >= currentVersesList.length - 1}
-                  className={`p-2 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                  className={`p-1.5 sm:p-2 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                     uiStyle === 'dynamic'
                       ? 'rounded-md border-2 bg-black hover:bg-[#ff0066]/20 border-white/10 hover:border-[#ff0066]/50 text-white'
                       : 'rounded-full bg-black/30 hover:bg-black/50 border border-white/10 text-white'
@@ -838,12 +898,39 @@ export default function BibleResults({
                   <ChevronRight size={16} />
                 </button>
                 
-                <div className={`h-6 w-px mx-1 ${uiStyle === 'dynamic' ? 'bg-[#ff0066]/30' : 'bg-white/15'}`} />
+                <div className={`h-6 w-px mx-0.5 sm:mx-1 ${uiStyle === 'dynamic' ? 'bg-[#ff0066]/30' : 'bg-white/15'}`} />
+
+                {/* Highlighter Colors */}
+                <div className="flex items-center gap-1 sm:gap-1.5 px-0.5 sm:px-1">
+                  {(['yellow', 'green', 'pink'] as const).map(color => {
+                    const bgClass = color === 'yellow' ? 'bg-yellow-400' : color === 'green' ? 'bg-emerald-400' : 'bg-pink-400';
+                    const activeBgClass = color === 'yellow' ? 'bg-yellow-300 ring-2 ring-yellow-200' : color === 'green' ? 'bg-emerald-300 ring-2 ring-emerald-200' : 'bg-pink-300 ring-2 ring-pink-200';
+                    
+                    const isHighlightedWithThisColor = annotations?.[focusedVerse ? `${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}` : '']?.highlightColor === color;
+                    
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          if (onSaveHighlight && focusedVerse) {
+                            // If clicking the active color, remove highlight, else set it
+                            onSaveHighlight(`${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}`, isHighlightedWithThisColor ? undefined : color);
+                          }
+                        }}
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full transition-all active:scale-90 shadow-inner ${isHighlightedWithThisColor ? activeBgClass : `${bgClass} opacity-70 hover:opacity-100`}`}
+                        title={`Resaltar ${color}`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className={`h-6 w-px mx-0.5 sm:mx-1 ${uiStyle === 'dynamic' ? 'bg-[#ff0066]/30' : 'bg-white/15'}`} />
 
                 <button
                   type="button"
                   onClick={() => onToggleBookmark && focusedVerse && onToggleBookmark(`${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}`)}
-                  className={`p-2 transition-all active:scale-95 ${
+                  className={`p-1.5 sm:p-2 transition-all active:scale-95 ${
                     uiStyle === 'dynamic'
                       ? `rounded-md border-2 ${annotations?.[focusedVerse ? `${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}` : '']?.isBookmarked ? 'bg-[#ff0066]/20 text-[#ff0066] border-[#ff0066]' : 'bg-black hover:bg-[#ff0066]/20 border-white/10 hover:border-[#ff0066]/50 text-white/80'}`
                       : `rounded-full border ${annotations?.[focusedVerse ? `${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}` : '']?.isBookmarked ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-black/30 hover:bg-black/50 text-white/90 border-white/10'}`
@@ -856,7 +943,7 @@ export default function BibleResults({
                 <button
                   type="button"
                   onClick={() => setIsEditingComment(!isEditingComment)}
-                  className={`p-2 transition-all active:scale-95 ${
+                  className={`p-1.5 sm:p-2 transition-all active:scale-95 ${
                     uiStyle === 'dynamic'
                       ? `rounded-md border-2 ${annotations?.[focusedVerse ? `${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}` : '']?.comment ? 'bg-[#00e5ff]/20 text-[#00e5ff] border-[#00e5ff]' : 'bg-black hover:bg-[#00e5ff]/20 border-white/10 hover:border-[#00e5ff]/50 text-white/80'}`
                       : `rounded-full border ${annotations?.[focusedVerse ? `${focusedVerse.book_name} ${focusedVerse.chapter}:${focusedVerse.verse}` : '']?.comment ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-black/30 hover:bg-black/50 text-white/90 border-white/10'}`
@@ -869,7 +956,7 @@ export default function BibleResults({
                 <button
                   type="button"
                   onClick={handleCopyFocusedVerse}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 transition-all active:scale-95 text-xs font-medium ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 transition-all active:scale-95 text-[11px] sm:text-xs font-medium ${
                     uiStyle === 'dynamic'
                       ? 'rounded-md border-2 bg-black hover:bg-white/10 border-white/10 text-white/90'
                       : 'rounded-full border border-white/10 bg-black/30 hover:bg-black/50 text-white/90'
@@ -889,12 +976,12 @@ export default function BibleResults({
                   )}
                 </button>
 
-                <div className={`h-6 w-px mx-1 ${uiStyle === 'dynamic' ? 'bg-[#ff0066]/30' : 'bg-white/15'}`} />
+                <div className={`h-6 w-px mx-0.5 sm:mx-1 ${uiStyle === 'dynamic' ? 'bg-[#ff0066]/30' : 'bg-white/15'}`} />
 
                 <button
                   type="button"
                   onClick={() => setFocusedVerse(null)}
-                  className={`p-2 transition-all active:scale-95 font-bold ${
+                  className={`p-1.5 sm:p-2 transition-all active:scale-95 font-bold shrink-0 ${
                     uiStyle === 'dynamic'
                       ? 'rounded-md bg-[#ff0066] hover:bg-[#ff0066]/80 text-white border-2 border-transparent'
                       : 'rounded-full bg-cyan-400 hover:bg-cyan-300 text-black shadow-[0_0_12px_rgba(34,211,238,0.4)]'
