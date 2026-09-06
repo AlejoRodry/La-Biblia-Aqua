@@ -7,22 +7,28 @@ async function startServer() {
   const PORT = 3000;
 
   // Service Worker and Manifest explicit routes with proper PWA headers
-  // Serve public directory for icons, manifest, favicon
-  app.use(express.static('public'));
-
   app.get('/sw.js', (_req, res) => {
     res.setHeader('Service-Worker-Allowed', '/');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    const publicPath = path.resolve(process.cwd(), 'public/sw.js');
-    res.sendFile(publicPath);
+    const swPath = process.env.NODE_ENV === 'production' 
+      ? path.resolve(process.cwd(), 'dist/sw.js')
+      : path.resolve(process.cwd(), 'public/sw.js');
+    res.sendFile(swPath);
   });
 
   app.get(['/manifest.webmanifest', '/manifest.json'], (_req, res) => {
     res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-    const publicPath = path.resolve(process.cwd(), 'public/manifest.json');
-    res.sendFile(publicPath);
+    const manifestPath = process.env.NODE_ENV === 'production'
+      ? path.resolve(process.cwd(), 'dist/manifest.json')
+      : path.resolve(process.cwd(), 'public/manifest.json');
+    res.sendFile(manifestPath);
   });
+
+  // Serve public directory for icons, manifest, favicon
+  if (process.env.NODE_ENV !== 'production') {
+    app.use(express.static('public'));
+  }
 
   // In-memory cache for the Bible data
   let bibleDataCache: any = null;

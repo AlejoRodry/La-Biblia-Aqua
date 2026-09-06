@@ -123,6 +123,7 @@ export default function App() {
   const [showChapters, setShowChapters] = useState(false);
   const [bgEnabled, setBgEnabled] = useState(() => localStorage.getItem('bible_bg_enabled') !== 'false');
   const [particlesEnabled, setParticlesEnabled] = useState(() => localStorage.getItem('bible_particles_enabled') !== 'false');
+  const [motionEffectsEnabled, setMotionEffectsEnabled] = useState(() => localStorage.getItem('bible_motion_effects_enabled') !== 'false');
   const [uiStyle, setUiStyle] = useState<'serene' | 'dynamic'>(() => (localStorage.getItem('bible_ui_style') as 'serene' | 'dynamic') || 'serene');
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -241,6 +242,9 @@ export default function App() {
     localStorage.setItem('bible_particles_enabled', particlesEnabled.toString());
   }, [particlesEnabled]);
   useEffect(() => {
+    localStorage.setItem('bible_motion_effects_enabled', motionEffectsEnabled.toString());
+  }, [motionEffectsEnabled]);
+  useEffect(() => {
     localStorage.setItem('bible_ui_style', uiStyle);
   }, [uiStyle]);
 
@@ -291,16 +295,38 @@ export default function App() {
 
   // Update theme based on timeMode and real time
   useEffect(() => {
+    let themeToSet: WaterTheme = 'night';
     if (timeMode !== 'auto') {
-      setActiveTheme(timeMode);
-      return;
+      themeToSet = timeMode;
+    } else {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 8) themeToSet = 'dawn';
+      else if (hour >= 8 && hour < 17) themeToSet = 'day';
+      else if (hour >= 17 && hour < 20) themeToSet = 'sunset';
+      else themeToSet = 'night';
     }
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 8) setActiveTheme('dawn');
-    else if (hour >= 8 && hour < 17) setActiveTheme('day');
-    else if (hour >= 17 && hour < 20) setActiveTheme('sunset');
-    else setActiveTheme('night');
-  }, [timeMode]);
+    
+    setActiveTheme(themeToSet);
+    
+    // Dynamically update the PWA theme-color meta tag for mobile status bars
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      let color = '#020617'; // default night/dark
+      if (!bgEnabled) {
+        color = '#000000';
+      } else if (uiStyle === 'dynamic') {
+        color = '#000000'; // Pure black for dynamic mode
+      } else {
+        switch (themeToSet) {
+          case 'dawn': color = '#1e1b4b'; break; // Indigo 950
+          case 'day': color = '#0ea5e9'; break; // Sky 500
+          case 'sunset': color = '#9f1239'; break; // Rose 900
+          case 'night': color = '#020617'; break; // Slate 950
+        }
+      }
+      metaThemeColor.setAttribute('content', color);
+    }
+  }, [timeMode, uiStyle, bgEnabled]);
 
   const verseOfTheDay = React.useMemo(() => {
     // Math.floor(Date.now() / 86400000) gets the current day number
@@ -364,7 +390,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen w-full font-sans text-white overflow-x-hidden">
+    <div className={`relative min-h-screen w-full font-sans text-white overflow-x-hidden ${motionEffectsEnabled ? 'motion-effects-enabled' : ''}`}>
       {/* SVG Filter for perfect text outline (subtracting interior) */}
       <svg width="0" height="0" className="absolute pointer-events-none">
         <defs>
@@ -467,7 +493,7 @@ export default function App() {
             {result && (
               <button 
                 onClick={handleBack}
-                className={`h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold rounded-full ${
+                className={`underwater-float-slow h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold rounded-full ${
                   uiStyle === 'dynamic'
                     ? 'bg-black/80 hover:bg-[#ff0066] border-2 border-white/80 text-white transform -skew-x-12'
                     : 'bg-black/25 hover:bg-black/45 border border-white/20 hover:border-white/40 text-white'
@@ -480,7 +506,7 @@ export default function App() {
             )}
             <button 
               onClick={() => setSidebarOpen(true)}
-              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float h-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
                   : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
@@ -495,17 +521,16 @@ export default function App() {
             {!isOnline && (
               <button
                 onClick={() => setShowSettings(true)}
-                className="h-9 sm:h-10 flex items-center gap-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95 shrink-0"
+                className="underwater-float-delayed h-9 sm:h-10 flex items-center gap-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full text-amber-200 text-xs font-semibold backdrop-blur-md transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)] active:scale-95 shrink-0"
                 title="Modo sin conexión activo - Pulsa para ver detalles"
               >
                 <WifiOff size={13} />
                 <span className="hidden min-[420px]:inline">Offline</span>
               </button>
             )}
-
             <button 
               onClick={() => setShowReadingGuide(true)}
-              className={`h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md rounded-full border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold shrink-0 ${
+              className={`underwater-float h-9 sm:h-10 flex items-center gap-1.5 px-3 sm:px-4 backdrop-blur-md rounded-full border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 text-xs sm:text-sm font-semibold shrink-0 ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#e52b22] border-2 border-[#ffea29] text-[#ffea29] hover:text-white font-black italic -skew-x-12'
                   : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-amber-400/50 text-white'
@@ -517,10 +542,9 @@ export default function App() {
                 {progressData.currentStreak} <span className="hidden min-[400px]:inline">{progressData.currentStreak === 1 ? 'día' : 'días'}</span>
               </span>
             </button>
-
             <button 
               onClick={() => setShowBookmarks(true)}
-              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float-slow w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#ff0066] hover:text-white border-2 border-white/80'
                   : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
@@ -532,7 +556,7 @@ export default function App() {
             
             <button 
               onClick={() => setShowSettings(!showSettings)}
-              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float-delayed w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 showSettings 
                   ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
                   : uiStyle === 'dynamic'
@@ -557,6 +581,8 @@ export default function App() {
           setBgEnabled={setBgEnabled}
           particlesEnabled={particlesEnabled}
           setParticlesEnabled={setParticlesEnabled}
+          motionEffectsEnabled={motionEffectsEnabled}
+          setMotionEffectsEnabled={setMotionEffectsEnabled}
           readingFontFamily={readingFontFamily}
           setReadingFontFamily={setReadingFontFamily}
           readingFontSize={readingFontSize}
@@ -599,7 +625,7 @@ export default function App() {
               </div>
 
               <div className="w-full flex flex-col space-y-4 sm:space-y-5">
-                <form onSubmit={handleSearch} className="w-full relative group">
+                <form onSubmit={handleSearch} className="w-full relative group underwater-float">
                     <input
                       type="text"
                       placeholder={`Buscar pasaje (p. ej. ${CURATED_PASSAGES_POOL[exampleIndex]})`}
@@ -631,7 +657,7 @@ export default function App() {
 
                 {/* Continue Last Read Chapter Button (Placed directly below Search Bar) */}
                 {lastRead && (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full flex justify-center pt-0.5">
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full flex justify-center pt-0.5 underwater-float-delayed">
                     <button 
                       onClick={() => handleSearch(undefined, lastRead)}
                       className={`group flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border shadow-lg transition-all active:scale-95 ${
@@ -648,7 +674,7 @@ export default function App() {
                 )}
 
                 {/* Quick Exploration (Action-oriented Pills) */}
-                <div className="w-full flex flex-col items-center mt-4 sm:mt-6">
+                <div className="w-full flex flex-col items-center mt-4 sm:mt-6 underwater-float">
                   <span className="text-white/50 text-[11px] font-medium mb-3 uppercase tracking-widest text-center w-full">Descubrir:</span>
                   <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-2.5">
                     
@@ -722,7 +748,7 @@ export default function App() {
             {/* Verse of the Day */}
             <div 
               onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
-              className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative"
+              className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative underwater-float"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
@@ -742,7 +768,7 @@ export default function App() {
 
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* History */}
-              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float-delayed">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-medium flex items-center drop-shadow-md">
                     <History size={18} className="mr-2 text-cyan-300" /> Búsquedas Recientes
@@ -753,7 +779,7 @@ export default function App() {
                         setRecentSearches([]);
                         localStorage.removeItem('bible_recent_searches');
                       }}
-                      className="text-xs text-white/50 hover:text-white/80 transition-colors"
+                      className="underwater-float-delayed text-xs text-white/50 hover:text-white/80 transition-colors"
                     >
                       Limpiar
                     </button>
@@ -764,7 +790,7 @@ export default function App() {
                     <button
                       key={idx}
                       onClick={() => handleSearch(undefined, item)}
-                      className="w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group"
+                      className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
                     >
                       <span>{item}</span>
                       <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
@@ -776,14 +802,14 @@ export default function App() {
               </div>
 
               {/* Recommendations */}
-              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-medium flex items-center drop-shadow-md">
                     <Sparkles size={18} className="mr-2 text-amber-300" /> Recomendaciones
                   </h3>
                   <button
                     onClick={shuffleSuggestions}
-                    className="text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
+                    className="underwater-float-slow text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
                   >
                     <RotateCw size={12} /> Variar
                   </button>
@@ -793,7 +819,7 @@ export default function App() {
                     <button
                       key={`${item}-${idx}`}
                       onClick={() => handleSearch(undefined, item)}
-                      className="w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group"
+                      className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float-delayed' : 'underwater-float'}`}
                     >
                       <span>{item}</span>
                       <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />

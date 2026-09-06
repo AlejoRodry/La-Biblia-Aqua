@@ -14,6 +14,9 @@ export default function WaterBackground({
 }) {
   const { scrollY } = useScroll();
   const yParallax = useTransform(scrollY, [0, 1000], ['0vh', '-30vh']);
+  
+  // Create an ocean depth effect that darkens the background as the user scrolls down, capped at 85% opacity
+  const depthOpacity = useTransform(scrollY, [0, 1500, 4500], [0, 0.5, 0.85]);
 
   const themeConfig = useMemo(() => {
     switch (theme) {
@@ -359,6 +362,14 @@ export default function WaterBackground({
         </div>
       )}
       </motion.div>
+
+      {/* Ocean Depth Darkness Overlay */}
+      {showBackground && (
+        <motion.div 
+          className="fixed inset-0 bg-[#020617] pointer-events-none mix-blend-multiply"
+          style={{ opacity: depthOpacity }}
+        />
+      )}
     </div>
   );
 }

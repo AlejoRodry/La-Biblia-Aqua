@@ -313,7 +313,7 @@ export default function PersonaBibleMenu({
                       setSelectedChapter(1);
                       if (window.innerWidth < 768) setMobileView('calendar');
                     }}
-                    className={`w-full group text-left px-6 py-4 mb-2 flex items-center justify-between transition-all relative ${
+                    className={`w-full group text-left px-6 py-4 mb-2 flex items-center justify-between transition-all relative ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'} ${
                       uiStyle === 'dynamic' ? 'transform' : 'rounded-xl border border-white/10'
                     } ${
                       isSelected
@@ -395,7 +395,7 @@ export default function PersonaBibleMenu({
                       onMouseEnter={() => setHoveredChapter(chapterNum)}
                       onMouseLeave={() => setHoveredChapter(null)}
                       onClick={() => handleReadChapter(chapterNum)}
-                      className="relative aspect-square flex items-center justify-center cursor-pointer group"
+                      className={`relative aspect-square flex items-center justify-center cursor-pointer group ${i % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
                     >
                       {/* Read chapter completion dot or check */}
                       {isRead && (

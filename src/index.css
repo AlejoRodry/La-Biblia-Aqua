@@ -121,3 +121,30 @@
   from { background-position: 0px var(--wave-y, 0%); }
   to { background-position: 320px var(--wave-y, 0%); }
 }
+
+@keyframes underwater-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-4px) rotate(0.5deg);
+  }
+  66% {
+    transform: translateY(3px) rotate(-0.5deg);
+  }
+}
+
+.motion-effects-enabled .underwater-float {
+  animation: underwater-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.motion-effects-enabled .underwater-float-delayed {
+  animation: underwater-float 7s ease-in-out infinite reverse;
+  will-change: transform;
+}
+
+.motion-effects-enabled .underwater-float-slow {
+  animation: underwater-float 8s ease-in-out infinite 1s;
+  will-change: transform;
+}

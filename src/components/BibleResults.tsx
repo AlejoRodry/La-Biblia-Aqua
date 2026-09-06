@@ -710,10 +710,10 @@ export default function BibleResults({
                   </div>
                 )}
                 
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-wide drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] relative z-10">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-wide drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] relative z-10 underwater-float-delayed">
                   {result.reference}
                 </h2>
-                <div className="flex items-center justify-center gap-3 mt-3 relative z-10">
+                <div className="flex items-center justify-center gap-3 mt-3 relative z-10 underwater-float">
                   <span className="text-cyan-300 font-medium text-sm md:text-base drop-shadow-md">
                     {result.translation_name}
                   </span>
@@ -757,7 +757,7 @@ export default function BibleResults({
                       fontSize: currentSizeOption.fontSizeRem,
                       lineHeight: currentLineHeightOption.value,
                     }}
-                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3 ${highlightClasses} ${
+                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3 ${!focusedVerse ? (i % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed') : ''} ${highlightClasses} ${
                       isFocused 
                         ? 'text-cyan-100 bg-white/10 scale-[1.02] relative z-[70] shadow-2xl ring-1 ring-cyan-400/30' 
                         : isDimmed
@@ -851,7 +851,7 @@ export default function BibleResults({
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[600px] w-fit ${
+            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[600px] w-fit underwater-float ${
               uiStyle === 'dynamic' 
                 ? 'bg-black/95 border-2 border-[#ff0066]/50 rounded-xl backdrop-blur-md' 
                 : 'bg-black/30 backdrop-blur-md border border-white/20 rounded-[2rem]'
