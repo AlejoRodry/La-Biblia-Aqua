@@ -314,7 +314,7 @@ export default function BibleResults({
       {/* Unified Chapter Navigation Capsule (Passage Mode) */}
       {result.type === 'passage' && result.bookName && result.totalChapters && (
         <div className={`flex items-center justify-center relative z-[90] mt-0 mb-1.5 sm:mb-2 transition-all duration-300 ${focusedVerse ? 'opacity-30 blur-sm pointer-events-none' : 'opacity-100'}`}>
-          <div className="relative">
+          <div className="relative ">
             <div className={`flex items-center backdrop-blur-md rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all p-0.5 sm:p-1 border ${
               uiStyle === 'dynamic'
                 ? 'bg-black/80 border-2 border-white/80 transform -skew-x-12'
@@ -657,7 +657,7 @@ export default function BibleResults({
                     <button
                       key={chapterNum}
                       onClick={() => onSearch(`${result.bookName} ${chapterNum}`)}
-                      className={`relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 group ${
+                      className={`relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all hover:scale-110 active:scale-95 group  ${
                         uiStyle === 'dynamic' 
                           ? 'bg-black/40 border-2 border-white/10 hover:border-[#ff0066]/50 hover:bg-[#ff0066]/10' 
                           : 'bg-white/5 border border-white/10 hover:border-cyan-400/40 hover:bg-cyan-500/10'
@@ -710,10 +710,10 @@ export default function BibleResults({
                   </div>
                 )}
                 
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-wide drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] relative z-10 underwater-float-delayed">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-wide drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] relative z-10 ">
                   {result.reference}
                 </h2>
-                <div className="flex items-center justify-center gap-3 mt-3 relative z-10 underwater-float">
+                <div className="flex items-center justify-center gap-3 mt-3 relative z-10 ">
                   <span className="text-cyan-300 font-medium text-sm md:text-base drop-shadow-md">
                     {result.translation_name}
                   </span>
@@ -726,7 +726,7 @@ export default function BibleResults({
                   <span className="text-white/40">•</span>
                   <button 
                     onClick={handleToggleAudio}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${isPlayingAudio ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors  ${isPlayingAudio ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/10 hover:bg-white/20 text-white/80'}`}
                     title={isPlayingAudio ? "Detener lectura" : "Escuchar capítulo en voz alta"}
                   >
                     {isPlayingAudio ? <Square size={12} className="fill-current" /> : <Play size={12} className="fill-current" />}
@@ -757,7 +757,7 @@ export default function BibleResults({
                       fontSize: currentSizeOption.fontSizeRem,
                       lineHeight: currentLineHeightOption.value,
                     }}
-                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3 ${!focusedVerse ? (i % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed') : ''} ${highlightClasses} ${
+                    className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3  ${highlightClasses} ${
                       isFocused 
                         ? 'text-cyan-100 bg-white/10 scale-[1.02] relative z-[70] shadow-2xl ring-1 ring-cyan-400/30' 
                         : isDimmed
@@ -851,7 +851,7 @@ export default function BibleResults({
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[600px] w-fit underwater-float ${
+            className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[120] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[600px] w-fit  ${
               uiStyle === 'dynamic' 
                 ? 'bg-black/95 border-2 border-[#ff0066]/50 rounded-xl backdrop-blur-md' 
                 : 'bg-black/30 backdrop-blur-md border border-white/20 rounded-[2rem]'

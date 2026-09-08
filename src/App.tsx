@@ -124,6 +124,7 @@ export default function App() {
   const [bgEnabled, setBgEnabled] = useState(() => localStorage.getItem('bible_bg_enabled') !== 'false');
   const [particlesEnabled, setParticlesEnabled] = useState(() => localStorage.getItem('bible_particles_enabled') !== 'false');
   const [motionEffectsEnabled, setMotionEffectsEnabled] = useState(() => localStorage.getItem('bible_motion_effects_enabled') !== 'false');
+  const [deepTransitionsEnabled, setDeepTransitionsEnabled] = useState(() => localStorage.getItem('bible_deep_transitions_enabled') !== 'false');
   const [uiStyle, setUiStyle] = useState<'serene' | 'dynamic'>(() => (localStorage.getItem('bible_ui_style') as 'serene' | 'dynamic') || 'serene');
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -244,6 +245,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('bible_motion_effects_enabled', motionEffectsEnabled.toString());
   }, [motionEffectsEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('bible_deep_transitions_enabled', deepTransitionsEnabled.toString());
+  }, [deepTransitionsEnabled]);
   useEffect(() => {
     localStorage.setItem('bible_ui_style', uiStyle);
   }, [uiStyle]);
@@ -506,7 +511,7 @@ export default function App() {
             )}
             <button 
               onClick={() => setSidebarOpen(true)}
-              className={`underwater-float h-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float w-9 h-9 sm:w-10 sm:h-10 aspect-square flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#00e5ff] hover:text-black border-2 border-white/80'
                   : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
@@ -544,7 +549,7 @@ export default function App() {
             </button>
             <button 
               onClick={() => setShowBookmarks(true)}
-              className={`underwater-float-slow w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float-slow w-9 h-9 sm:w-10 sm:h-10 aspect-square flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 uiStyle === 'dynamic'
                   ? 'bg-black/80 hover:bg-[#ff0066] hover:text-white border-2 border-white/80'
                   : 'bg-black/25 hover:bg-black/45 border-white/20 hover:border-white/40'
@@ -556,7 +561,7 @@ export default function App() {
             
             <button 
               onClick={() => setShowSettings(!showSettings)}
-              className={`underwater-float-delayed w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
+              className={`underwater-float-delayed w-9 h-9 sm:w-10 sm:h-10 aspect-square flex items-center justify-center backdrop-blur-md border rounded-full text-white transition-all shadow-[0_4px_12px_rgba(0,0,0,0.3)] active:scale-95 shrink-0 ${
                 showSettings 
                   ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]' 
                   : uiStyle === 'dynamic'
@@ -583,6 +588,8 @@ export default function App() {
           setParticlesEnabled={setParticlesEnabled}
           motionEffectsEnabled={motionEffectsEnabled}
           setMotionEffectsEnabled={setMotionEffectsEnabled}
+          deepTransitionsEnabled={deepTransitionsEnabled}
+          setDeepTransitionsEnabled={setDeepTransitionsEnabled}
           readingFontFamily={readingFontFamily}
           setReadingFontFamily={setReadingFontFamily}
           readingFontSize={readingFontSize}
@@ -595,246 +602,280 @@ export default function App() {
           setUiStyle={setUiStyle}
         />
 
-        <div className={`flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 ${!result ? 'justify-center py-12' : 'justify-start pt-24 sm:pt-28 pb-12'}`}>
-          <motion.div 
-            animate={!result ? { y: [0, -10, 0] } : { y: 0 }}
-            transition={!result ? { duration: 6, repeat: Infinity, ease: "easeInOut" } : { duration: 0 }}
-            className={`w-full max-w-2xl flex flex-col items-center justify-center ${!result ? 'space-y-6 sm:space-y-8 mt-4 sm:mt-8 mb-8 sm:mb-12' : 'space-y-6'}`}
-          >
-            {/* Header & Search Bar (Only shown when there are no results) */}
-          {!result && (
-            <>
-              <div className="relative flex items-center justify-center my-2 sm:my-4 max-w-full overflow-visible">
-                {/* 1. True Outline Layer (Solid text filtered down to just the 2px border, perfectly unified without overlaps) */}
-                <h1 className={`absolute text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase leading-[1.1] font-black whitespace-nowrap select-none ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}
-                    style={{ 
-                      color: 'white', /* Must be opaque to generate solid alpha mask */
-                      filter: 'url(#true-outline)',
-                      WebkitTextStroke: '0px', /* Ensure no stroke */
-                      fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                      padding: '0.05em 0.15em', /* Match CSS padding */
-                    }}
-                    aria-hidden="true">
-                  BIBLIA
-                </h1>
-                
-                {/* 2. Fill Layer (Wave animation inside transparent text) */}
-                <h1 className={`relative text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] title-outline font-black whitespace-nowrap select-none ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}>
-                  BIBLIA
-                </h1>
-              </div>
+        <div className="grid grid-cols-1 grid-rows-1 min-h-[100svh] px-3.5 sm:px-6 md:px-12 relative overflow-hidden place-items-start justify-items-center">
+          <AnimatePresence>
+            {!result ? (
+              <motion.div 
+                key="home-view"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={{
+                  initial: { opacity: 1 },
+                  animate: { opacity: 1, transition: { staggerChildren: 0.15 } },
+                  exit: { pointerEvents: 'none', transition: { staggerChildren: 0.1, staggerDirection: -1, delayChildren: 0 } }
+                }}
+                className="col-start-1 row-start-1 w-full max-w-2xl flex flex-col items-center justify-center space-y-6 sm:space-y-8 mt-4 sm:mt-8 mb-8 sm:mb-12 mx-auto min-h-[80svh] py-12 origin-top"
+              >
+                {/* Header Title */}
+                <motion.div 
+                  variants={{
+                    initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: -20 },
+                    animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0, filter: 'blur(0px)' },
+                    exit: deepTransitionsEnabled ? { opacity: 1, y: '150vh', x: '-60vw', rotate: -25, filter: 'blur(30px)', transition: { duration: 6.0, ease: 'linear' } } : { opacity: 0 }
+                  }}
+                  className="relative flex items-center justify-center my-2 sm:my-4 max-w-full overflow-visible"
+                >
+                  {/* 1. True Outline Layer */}
+                  <h1 className={`absolute text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase leading-[1.1] font-black whitespace-nowrap select-none ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}
+                      style={{ color: 'white', filter: 'url(#true-outline)', WebkitTextStroke: '0px', fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', padding: '0.05em 0.15em' }}
+                      aria-hidden="true">
+                    BIBLIA
+                  </h1>
+                  
+                  {/* 2. Fill Layer */}
+                  <h1 className={`relative text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] title-outline font-black whitespace-nowrap select-none ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}>
+                    BIBLIA
+                  </h1>
+                </motion.div>
 
-              <div className="w-full flex flex-col space-y-4 sm:space-y-5">
-                <form onSubmit={handleSearch} className="w-full relative group underwater-float">
-                    <input
-                      type="text"
-                      placeholder={`Buscar pasaje (p. ej. ${CURATED_PASSAGES_POOL[exampleIndex]})`}
-                      className={`w-full pl-5 sm:pl-6 pr-14 sm:pr-16 py-3.5 sm:py-4 text-base sm:text-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-300/50 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)] ${
-                        uiStyle === 'dynamic' 
-                          ? 'bg-black/60 border-b-4 border-cyan-400 font-bold italic transform -skew-x-6 rounded-none focus:bg-black/80' 
-                          : 'bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl focus:bg-black/30'
-                      }`}
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                    />
-                    <button 
-                      type="submit"
-                      disabled={loading}
-                      className="absolute inset-y-1.5 sm:inset-y-2 right-1.5 sm:right-2 w-11 sm:w-12 flex items-center justify-center bg-black/20 hover:bg-black/40 border border-white/20 backdrop-blur-md rounded-xl text-white transition-all shadow-[0_4px_16px_rgba(0,0,0,0.3)] disabled:opacity-50"
-                    >
-                    {loading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                {/* Search Bar & Quick Expl. */}
+                <motion.div 
+                  variants={{
+                    initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 20 },
+                    animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0, filter: 'blur(0px)' },
+                    exit: deepTransitionsEnabled ? { opacity: 1, y: '150vh', x: '60vw', rotate: 20, filter: 'blur(25px)', transition: { duration: 6.5, ease: 'linear' } } : { opacity: 0 }
+                  }}
+                  className="w-full flex flex-col space-y-4 sm:space-y-5"
+                >
+                  <form onSubmit={handleSearch} className="w-full relative group underwater-float">
+                      <input
+                        type="text"
+                        placeholder={`Buscar pasaje (p. ej. ${CURATED_PASSAGES_POOL[exampleIndex]})`}
+                        className={`w-full pl-5 sm:pl-6 pr-14 sm:pr-16 py-3.5 sm:py-4 text-base sm:text-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-300/50 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)] ${
+                          uiStyle === 'dynamic' 
+                            ? 'bg-black/60 border-b-4 border-cyan-400 font-bold italic transform -skew-x-6 rounded-none focus:bg-black/80' 
+                            : 'bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl focus:bg-black/30'
+                        }`}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                      <button 
+                        type="submit"
+                        disabled={loading}
+                        className="absolute inset-y-1.5 sm:inset-y-2 right-1.5 sm:right-2 w-11 sm:w-12 flex items-center justify-center bg-black/20 hover:bg-black/40 border border-white/20 backdrop-blur-md rounded-xl text-white transition-all shadow-[0_4px_16px_rgba(0,0,0,0.3)] disabled:opacity-50"
                       >
+                      {loading ? (
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                          <Search size={20} />
+                        </motion.div>
+                      ) : (
                         <Search size={20} />
-                      </motion.div>
-                    ) : (
-                      <Search size={20} />
-                    )}
-                  </button>
-                </form>
-
-                {/* Continue Last Read Chapter Button (Placed directly below Search Bar) */}
-                {lastRead && (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full flex justify-center pt-0.5 underwater-float-delayed">
-                    <button 
-                      onClick={() => handleSearch(undefined, lastRead)}
-                      className={`group flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border shadow-lg transition-all active:scale-95 ${
-                        uiStyle === 'dynamic' 
-                          ? 'bg-[#111] hover:bg-[#ff0066] border-[#ff0066]/50 text-white transform -skew-x-6' 
-                          : 'bg-black/30 hover:bg-black/50 border-cyan-400/30 text-white backdrop-blur-md'
-                      }`}
-                    >
-                      <BookOpen size={17} className={uiStyle === 'dynamic' ? 'text-white' : 'text-cyan-300'} />
-                      <span className="font-semibold text-xs sm:text-sm">Continuar: {lastRead}</span>
-                      <ChevronRight size={17} className="opacity-60 group-hover:translate-x-1 transition-transform" />
+                      )}
                     </button>
+                  </form>
+
+                  {/* Continue Last Read Chapter Button */}
+                  {lastRead && (
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full flex justify-center pt-0.5">
+                      <button 
+                        onClick={() => handleSearch(undefined, lastRead)}
+                        className={`group flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border shadow-lg transition-all active:scale-95 underwater-float-delayed ${
+                          uiStyle === 'dynamic' 
+                            ? 'bg-[#111] hover:bg-[#ff0066] border-[#ff0066]/50 text-white transform -skew-x-6' 
+                            : 'bg-black/30 hover:bg-black/50 border-cyan-400/30 text-white backdrop-blur-md'
+                        }`}
+                      >
+                        <BookOpen size={17} className={uiStyle === 'dynamic' ? 'text-white' : 'text-cyan-300'} />
+                        <span className="font-semibold text-xs sm:text-sm">Continuar: {lastRead}</span>
+                        <ChevronRight size={17} className="opacity-60 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {/* Quick Exploration */}
+                  <div className="w-full flex flex-col items-center mt-4 sm:mt-6 underwater-float">
+                    <span className="text-white/50 text-[11px] font-medium mb-3 uppercase tracking-widest text-center w-full">Descubrir:</span>
+                    <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-2.5">
+                      {activeEmotions.map((emotion) => (
+                        <button
+                          key={emotion.id}
+                          onClick={() => handleSearch(undefined, emotion.id)}
+                          className={`group px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-md border rounded-full text-xs sm:text-sm transition-all shadow-sm flex items-center gap-1.5 active:scale-95 ${emotion.classes}`}
+                        >
+                          <span className={emotion.iconClass}>{emotion.icon}</span> {emotion.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Error Message */}
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full p-4 bg-red-900/30 backdrop-blur-md border border-red-400/30 rounded-2xl text-red-100 text-center shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                  >
+                    {error}
                   </motion.div>
                 )}
 
-                {/* Quick Exploration (Action-oriented Pills) */}
-                <div className="w-full flex flex-col items-center mt-4 sm:mt-6 underwater-float">
-                  <span className="text-white/50 text-[11px] font-medium mb-3 uppercase tracking-widest text-center w-full">Descubrir:</span>
-                  <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-2.5">
-                    
-                    {activeEmotions.map((emotion) => (
-                      <button
-                        key={emotion.id}
-                        onClick={() => handleSearch(undefined, emotion.id)}
-                        className={`group px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-md border rounded-full text-xs sm:text-sm transition-all shadow-sm flex items-center gap-1.5 active:scale-95 ${emotion.classes}`}
-                      >
-                        <span className={emotion.iconClass}>{emotion.icon}</span> {emotion.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Error Message */}
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full p-4 bg-red-900/30 backdrop-blur-md border border-red-400/30 rounded-2xl text-red-100 text-center shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
-            >
-              {error}
-            </motion.div>
-          )}
-
-          {/* Results Area (Passage reader or Keyword Verse explorer) */}
-          {result && !loading && (
-            <BibleResults
-              result={result}
-              annotations={annotations}
-              onToggleBookmark={handleToggleBookmark}
-              onSaveComment={handleSaveComment}
-              onSaveHighlight={handleSaveHighlight}
-              onSearch={(targetQuery) => handleSearch(undefined, targetQuery)}
-              onBack={handleBack}
-              showChapters={showChapters}
-              setShowChapters={setShowChapters}
-              readingFontFamily={readingFontFamily}
-              setReadingFontFamily={setReadingFontFamily}
-              readingFontSize={readingFontSize}
-              setReadingFontSize={setReadingFontSize}
-              readingLineHeight={readingLineHeight}
-              setReadingLineHeight={setReadingLineHeight}
-              numberFontFamily={numberFontFamily}
-              setNumberFontFamily={setNumberFontFamily}
-              uiStyle={uiStyle}
-              isChapterCompleted={
-                result.bookName && result.verses?.[0]
-                  ? !!progressData.completedChapters[`${result.bookName} ${result.verses[0].chapter}`]
-                  : false
-              }
-              onToggleChapterCompleted={handleToggleChapterCompleted}
-            />
-          )}
-
-        </motion.div>
-
-        {/* History & Recommendations System (Scroll down) */}
-        {!result && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-            className="w-full max-w-3xl mt-0 mb-8 flex flex-col gap-6"
-          >
-            {/* Verse of the Day */}
-            <div 
-              onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
-              className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative underwater-float"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles size={16} className="text-cyan-300" />
-                    <span className="text-xs font-bold tracking-widest text-cyan-200 uppercase">Versículo del Día</span>
-                  </div>
-                  <p className="text-white text-lg sm:text-xl font-medium leading-relaxed mb-3 drop-shadow-md">"{verseOfTheDay.text}"</p>
-                  <p className="text-white/60 font-semibold text-sm">— {verseOfTheDay.ref}</p>
-                </div>
-                <div className="hidden sm:flex shrink-0 bg-white/10 group-hover:bg-cyan-500/20 p-3 rounded-full transition-colors">
-                  <ArrowRight size={20} className="text-white group-hover:text-cyan-300 transition-colors" />
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* History */}
-              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float-delayed">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-medium flex items-center drop-shadow-md">
-                    <History size={18} className="mr-2 text-cyan-300" /> Búsquedas Recientes
-                  </h3>
-                  {recentSearches.length > 0 && (
-                    <button
-                      onClick={() => {
-                        setRecentSearches([]);
-                        localStorage.removeItem('bible_recent_searches');
-                      }}
-                      className="underwater-float-delayed text-xs text-white/50 hover:text-white/80 transition-colors"
-                    >
-                      Limpiar
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  {recentSearches.length > 0 ? recentSearches.slice(0, 5).map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSearch(undefined, item)}
-                      className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
-                    >
-                      <span>{item}</span>
-                      <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
-                    </button>
-                  )) : (
-                    <p className="text-white/60 text-sm italic px-2">No hay búsquedas recientes aún.</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Recommendations */}
-              <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-medium flex items-center drop-shadow-md">
-                    <Sparkles size={18} className="mr-2 text-amber-300" /> Recomendaciones
-                  </h3>
-                  <button
-                    onClick={shuffleSuggestions}
-                    className="underwater-float-slow text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
+                {/* History & Recommendations */}
+                <div className="w-full max-w-3xl mt-8 mb-8 flex flex-col gap-6 relative">
+                  {/* Verse of the Day */}
+                  <motion.div
+                    variants={{
+                      initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 30 },
+                      animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
+                      exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '-70vw', rotate: -15, filter: 'blur(35px)', transition: { duration: 7.0, ease: 'linear' } } : { opacity: 0 }
+                    }}
+                    onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
+                    className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative underwater-float"
                   >
-                    <RotateCw size={12} /> Variar
-                  </button>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles size={16} className="text-cyan-300" />
+                          <span className="text-xs font-bold tracking-widest text-cyan-200 uppercase">Versículo del Día</span>
+                        </div>
+                        <p className="text-white text-lg sm:text-xl font-medium leading-relaxed mb-3 drop-shadow-md">"{verseOfTheDay.text}"</p>
+                        <p className="text-white/60 font-semibold text-sm">— {verseOfTheDay.ref}</p>
+                      </div>
+                      <div className="hidden sm:flex shrink-0 bg-white/10 group-hover:bg-cyan-500/20 p-3 rounded-full transition-colors">
+                        <ArrowRight size={20} className="text-white group-hover:text-cyan-300 transition-colors" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* History */}
+                    <motion.div variants={{
+                      initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 30 },
+                      animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
+                      exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '-50vw', rotate: -30, filter: 'blur(20px)', transition: { duration: 7.5, ease: 'linear' } } : { opacity: 0 }
+                    }} className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float-delayed">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-medium flex items-center drop-shadow-md">
+                          <History size={18} className="mr-2 text-cyan-300" /> Búsquedas Recientes
+                        </h3>
+                        {recentSearches.length > 0 && (
+                          <button
+                            onClick={() => {
+                              setRecentSearches([]);
+                              localStorage.removeItem('bible_recent_searches');
+                            }}
+                            className="underwater-float-delayed text-xs text-white/50 hover:text-white/80 transition-colors"
+                          >
+                            Limpiar
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {recentSearches.length > 0 ? recentSearches.slice(0, 5).map((item, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleSearch(undefined, item)}
+                            className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
+                          >
+                            <span>{item}</span>
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
+                          </button>
+                        )) : (
+                          <p className="text-white/60 text-sm italic px-2">No hay búsquedas recientes aún.</p>
+                        )}
+                      </div>
+                    </motion.div>
+
+                    {/* Recommendations */}
+                    <motion.div variants={{
+                      initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 30 },
+                      animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
+                      exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '70vw', rotate: 35, filter: 'blur(25px)', transition: { duration: 6.2, ease: 'linear' } } : { opacity: 0 }
+                    }} className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-medium flex items-center drop-shadow-md">
+                          <Sparkles size={18} className="mr-2 text-amber-300" /> Recomendaciones
+                        </h3>
+                        <button
+                          onClick={shuffleSuggestions}
+                          className="underwater-float-slow text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
+                        >
+                          <RotateCw size={12} /> Variar
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        {suggestedPassages.slice(0, 5).map((item, idx) => (
+                          <button
+                            key={`${item}-${idx}`}
+                            onClick={() => handleSearch(undefined, item)}
+                            className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float-delayed' : 'underwater-float'}`}
+                          >
+                            <span>{item}</span>
+                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {suggestedPassages.slice(0, 5).map((item, idx) => (
-                    <button
-                      key={`${item}-${idx}`}
-                      onClick={() => handleSearch(undefined, item)}
-                      className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float-delayed' : 'underwater-float'}`}
-                    >
-                      <span>{item}</span>
-                      <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-        
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="results-view"
+                initial={deepTransitionsEnabled ? { opacity: 0, y: '-10vh', filter: 'blur(10px)' } : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={deepTransitionsEnabled ? { opacity: 0, y: '50vh', filter: 'blur(20px)', pointerEvents: 'none' } : { opacity: 0, y: 20, pointerEvents: 'none' }}
+                transition={{ duration: deepTransitionsEnabled ? 1.2 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="col-start-1 row-start-1 w-full max-w-4xl flex flex-col items-center justify-start space-y-6 pt-24 sm:pt-28 pb-12 min-h-[100svh] relative z-10"
+              >
+                {/* Error Message */}
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full p-4 bg-red-900/30 backdrop-blur-md border border-red-400/30 rounded-2xl text-red-100 text-center shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+
+                {!loading && result && (
+                  <BibleResults
+                    result={result}
+                    annotations={annotations}
+                    onToggleBookmark={handleToggleBookmark}
+                    onSaveComment={handleSaveComment}
+                    onSaveHighlight={handleSaveHighlight}
+                    onSearch={(targetQuery) => handleSearch(undefined, targetQuery)}
+                    onBack={handleBack}
+                    showChapters={showChapters}
+                    setShowChapters={setShowChapters}
+                    readingFontFamily={readingFontFamily}
+                    setReadingFontFamily={setReadingFontFamily}
+                    readingFontSize={readingFontSize}
+                    setReadingFontSize={setReadingFontSize}
+                    readingLineHeight={readingLineHeight}
+                    setReadingLineHeight={setReadingLineHeight}
+                    numberFontFamily={numberFontFamily}
+                    setNumberFontFamily={setNumberFontFamily}
+                    uiStyle={uiStyle}
+                    isChapterCompleted={
+                      result.bookName && result.verses?.[0]
+                        ? !!progressData.completedChapters[`${result.bookName} ${result.verses[0].chapter}`]
+                        : false
+                    }
+                    onToggleChapterCompleted={handleToggleChapterCompleted}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
-
-      {/* Global Persona 3 Style Calendar & Library System */}
+{/* Global Persona 3 Style Calendar & Library System */}
       <PersonaBibleMenu
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -845,6 +886,7 @@ export default function App() {
           handleSearch(undefined, `${book} ${chapter}`);
         }}
         uiStyle={uiStyle}
+        motionEffectsEnabled={motionEffectsEnabled}
       />
 
       {/* Reading Guide, Streak & Statistics Modal */}

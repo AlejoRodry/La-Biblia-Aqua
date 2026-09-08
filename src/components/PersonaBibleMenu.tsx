@@ -15,6 +15,7 @@ interface PersonaBibleMenuProps {
   onSelectChapter: (book: string, chapter: number) => void;
   uiStyle: 'serene' | 'dynamic';
   completedChapters?: Record<string, boolean>;
+  motionEffectsEnabled?: boolean;
 }
 
 const OLD_TESTAMENT_COUNT = 39;
@@ -27,6 +28,7 @@ export default function PersonaBibleMenu({
   onSelectChapter,
   uiStyle,
   completedChapters = {},
+  motionEffectsEnabled = true,
 }: PersonaBibleMenuProps) {
   const [selectedBookName, setSelectedBookName] = useState<string>(() => {
     return currentBookName || (toc.length > 0 ? toc[0].name : 'Génesis');
@@ -102,7 +104,7 @@ export default function PersonaBibleMenu({
           animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
           exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: 0.4 }}
-          className={`fixed inset-0 z-[200] w-screen h-screen overflow-hidden font-sans text-white ${uiStyle === 'dynamic' ? 'bg-black/40 selection:bg-[#ff0066] selection:text-white' : 'bg-black/40 selection:bg-cyan-500/50 backdrop-blur-xl'}`}
+          className={`fixed inset-0 z-[200] w-screen h-screen overflow-hidden font-sans text-white ${motionEffectsEnabled ? 'motion-effects-enabled' : ''} ${uiStyle === 'dynamic' ? 'bg-black/40 selection:bg-[#ff0066] selection:text-white' : 'bg-black/40 selection:bg-cyan-500/50 backdrop-blur-xl'}`}
         >
           {uiStyle === 'dynamic' ? (
             <>
@@ -129,7 +131,7 @@ export default function PersonaBibleMenu({
                 />
                 
                 {/* "Part-Time JOBS" -> "Menú BIBLIOTECA" */}
-                <div className="relative mt-8 mr-28 lg:mr-32 flex items-baseline gap-2 text-[#0b1040]">
+                <div className="relative mt-8 mr-28 lg:mr-32 flex items-baseline gap-2 text-[#0b1040] ">
                    <span className="font-extrabold text-lg lg:text-xl leading-none self-start mt-2">Menú</span>
                    <span 
                       className="font-black text-4xl lg:text-[4.5rem] tracking-tighter leading-none uppercase" 
@@ -142,8 +144,10 @@ export default function PersonaBibleMenu({
             </>
           ) : (
              <div className="absolute top-10 right-28 lg:right-32 z-20 pointer-events-none hidden md:block">
-               <h2 className="text-4xl font-light text-white/90 tracking-widest uppercase">Biblioteca</h2>
-               <div className="w-16 h-1 bg-cyan-400/50 mt-4 rounded-full ml-auto"></div>
+               <div className="flex flex-col items-end ">
+                 <h2 className="text-4xl font-light text-white/90 tracking-widest uppercase">Biblioteca</h2>
+                 <div className="w-16 h-1 bg-cyan-400/50 mt-4 rounded-full ml-auto"></div>
+               </div>
              </div>
           )}
 
@@ -155,7 +159,7 @@ export default function PersonaBibleMenu({
           transition={{ type: "spring", damping: 20, delay: 0.1 }}
           className="absolute top-4 md:top-8 left-4 md:left-8 z-20 pointer-events-none"
         >
-          <div className="relative">
+          <div className="relative ">
             <h1 className={`text-3xl md:text-5xl lg:text-6xl ${uiStyle === 'dynamic' ? 'font-black italic tracking-tighter' : 'font-light tracking-widest'} text-white drop-shadow-md mb-0 leading-none uppercase`}>
               <span className="md:hidden">{mobileView === 'list' ? 'Biblioteca' : selectedBook.name}</span>
               <span className="hidden md:inline">{selectedBook.name}</span>
@@ -181,13 +185,15 @@ export default function PersonaBibleMenu({
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ type: "spring", damping: 20, delay: 0.2 }}
           onClick={onClose} 
-          className={`absolute top-6 right-6 md:top-8 md:right-8 z-50 flex items-center justify-center transition-all ${
+          className={`absolute top-6 right-6 md:top-8 md:right-8 z-50 flex items-center justify-center transition-all  ${
             uiStyle === 'dynamic' 
               ? 'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-2 md:border-4 border-white transform -skew-x-12 shadow-[4px_4px_0_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.3)]' 
               : 'w-12 h-12 md:w-14 md:h-14 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full border border-white/20 hover:border-white/50 text-white shadow-lg'
           }`}
         >
-          <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[12deg]' : ''} />
+          <div className="w-full h-full flex items-center justify-center">
+            <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[12deg]' : ''} />
+          </div>
         </motion.button>
 
         {/* 5. Main Content Area */}
@@ -206,62 +212,64 @@ export default function PersonaBibleMenu({
           {/* Column: Book Selector */}
           <div className="w-[100vw] md:w-[24rem] lg:w-[28rem] xl:w-[32rem] shrink-0 h-full flex flex-col px-6 md:px-0 md:-mr-2 lg:-mr-4 xl:-mr-6">
             {/* Styled Search Bar (Replacing plain search & old capitulos banner) */}
-            <motion.div variants={itemLeft} className={`relative mb-4 w-full h-14 lg:h-16 flex-shrink-0 cursor-text group ${uiStyle === 'dynamic' ? 'shadow-[0_10px_20px_rgba(0,0,0,0.5)]' : 'bg-black/20 backdrop-blur-md rounded-xl border border-white/20'}`} onClick={() => document.getElementById('search-input')?.focus()}>
-               {uiStyle === 'dynamic' ? (
-                 <>
-                   {/* Base Red Layer (Left side) */}
-                   <div className="absolute inset-0 bg-[#8b1a1a] transition-colors group-focus-within:bg-[#ff0066]" />
-                   
-                   {/* Left Icons */}
-                   <div className="absolute left-4 lg:left-5 top-1/2 -translate-y-1/2 flex items-center z-10 pointer-events-none">
-                      <Search className="text-[#ffea29] w-6 h-6 lg:w-7 lg:h-7" />
-                   </div>
+            <motion.div variants={itemLeft} className="mb-4 w-full h-14 lg:h-16 flex-shrink-0 cursor-text group" onClick={() => document.getElementById('search-input')?.focus()}>
+              <div className={`relative w-full h-full  ${uiStyle === 'dynamic' ? 'shadow-[0_10px_20px_rgba(0,0,0,0.5)]' : 'bg-black/20 backdrop-blur-md rounded-xl border border-white/20'}`}>
+                {uiStyle === 'dynamic' ? (
+                  <>
+                    {/* Base Red Layer (Left side) */}
+                    <div className="absolute inset-0 bg-[#8b1a1a] transition-colors group-focus-within:bg-[#ff0066]" />
+                    
+                    {/* Left Icons */}
+                    <div className="absolute left-4 lg:left-5 top-1/2 -translate-y-1/2 flex items-center z-10 pointer-events-none">
+                       <Search className="text-[#ffea29] w-6 h-6 lg:w-7 lg:h-7" />
+                    </div>
 
-                   {/* Right Dark Layer */}
-                   <div 
-                      className="absolute right-0 top-0 bottom-0 w-[82%] bg-[#2a2a2a] z-20 flex flex-col justify-center pl-8 lg:pl-10 pr-4 lg:pr-5 transition-colors group-focus-within:bg-[#111]"
-                      style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' }}
-                   >
+                    {/* Right Dark Layer */}
+                    <div 
+                       className="absolute right-0 top-0 bottom-0 w-[82%] bg-[#2a2a2a] z-20 flex flex-col justify-center pl-8 lg:pl-10 pr-4 lg:pr-5 transition-colors group-focus-within:bg-[#111]"
+                       style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' }}
+                    >
+                       <input
+                         id="search-input"
+                         type="text"
+                         value={searchFilter}
+                         onChange={(e) => setSearchFilter(e.target.value)}
+                         placeholder="BUSCAR LIBRO..."
+                         className="w-full bg-transparent text-white font-black italic tracking-wide text-lg lg:text-xl placeholder-white/40 focus:outline-none"
+                         style={{ transform: 'skewX(-5deg)' }}
+                       />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Serene Search Bar */}
+                    <div className="absolute inset-0 flex items-center px-4">
+                      <Search className="text-cyan-300/80 w-5 h-5 mr-3" />
                       <input
-                        id="search-input"
-                        type="text"
-                        value={searchFilter}
-                        onChange={(e) => setSearchFilter(e.target.value)}
-                        placeholder="BUSCAR LIBRO..."
-                        className="w-full bg-transparent text-white font-black italic tracking-wide text-lg lg:text-xl placeholder-white/40 focus:outline-none"
-                        style={{ transform: 'skewX(-5deg)' }}
-                      />
-                   </div>
-                 </>
-               ) : (
-                 <>
-                   {/* Serene Search Bar */}
-                   <div className="absolute inset-0 flex items-center px-4">
-                     <Search className="text-cyan-300/80 w-5 h-5 mr-3" />
-                     <input
-                        id="search-input"
-                        type="text"
-                        value={searchFilter}
-                        onChange={(e) => setSearchFilter(e.target.value)}
-                        placeholder="Buscar libro..."
-                        className="w-full bg-transparent text-white font-light tracking-wide text-lg placeholder-white/40 focus:outline-none"
-                      />
-                   </div>
-                 </>
+                         id="search-input"
+                         type="text"
+                         value={searchFilter}
+                         onChange={(e) => setSearchFilter(e.target.value)}
+                         placeholder="Buscar libro..."
+                         className="w-full bg-transparent text-white font-light tracking-wide text-lg placeholder-white/40 focus:outline-none"
+                       />
+                    </div>
+                  </>
+                )}
+                
+                {searchFilter && (
+                 <button onClick={(e) => { e.stopPropagation(); setSearchFilter(''); }} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 text-white/50 hover:text-[#ff0066] transition-colors">
+                   <X size={20} />
+                 </button>
                )}
-               
-               {searchFilter && (
-                <button onClick={(e) => { e.stopPropagation(); setSearchFilter(''); }} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 text-white/50 hover:text-[#ff0066] transition-colors">
-                  <X size={20} />
-                </button>
-              )}
+              </div>
             </motion.div>
 
             {/* Filter Tabs */}
             <motion.div variants={itemLeft} className={`flex gap-2 mb-4 text-xs tracking-wider ${uiStyle === 'dynamic' ? 'font-black italic transform -skew-x-3' : 'font-medium uppercase'}`}>
               <button
                 onClick={() => setTestamentFilter('all')}
-                className={`flex-1 py-2 transition-all ${
+                className={`flex-1 py-2 transition-all  ${
                   testamentFilter === 'all' 
                     ? (uiStyle === 'dynamic' ? 'bg-[#ffcc00] text-black border border-[#ffcc00] shadow-[4px_4px_0_rgba(0,0,0,0.2)]' : 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/50 rounded-lg') 
                     : (uiStyle === 'dynamic' ? 'bg-black/5 text-black/60 border border-black/20 hover:border-black/40' : 'bg-black/20 text-white/60 border border-white/10 hover:border-white/30 rounded-lg')
@@ -271,7 +279,7 @@ export default function PersonaBibleMenu({
               </button>
               <button
                 onClick={() => setTestamentFilter('ot')}
-                className={`flex-1 py-2 transition-all ${
+                className={`flex-1 py-2 transition-all  ${
                   testamentFilter === 'ot' 
                     ? (uiStyle === 'dynamic' ? 'bg-[#ff0066] text-white border border-[#ff0066] shadow-[4px_4px_0_rgba(0,0,0,0.2)]' : 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/50 rounded-lg') 
                     : (uiStyle === 'dynamic' ? 'bg-black/5 text-black/60 border border-black/20 hover:border-black/40' : 'bg-black/20 text-white/60 border border-white/10 hover:border-white/30 rounded-lg')
@@ -281,7 +289,7 @@ export default function PersonaBibleMenu({
               </button>
               <button
                 onClick={() => setTestamentFilter('nt')}
-                className={`flex-1 py-2 transition-all ${
+                className={`flex-1 py-2 transition-all  ${
                   testamentFilter === 'nt' 
                     ? (uiStyle === 'dynamic' ? 'bg-cyan-400 text-black border border-cyan-400 shadow-[4px_4px_0_rgba(0,0,0,0.2)]' : 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/50 rounded-lg') 
                     : (uiStyle === 'dynamic' ? 'bg-black/5 text-black/60 border border-black/20 hover:border-black/40' : 'bg-black/20 text-white/60 border border-white/10 hover:border-white/30 rounded-lg')
@@ -303,7 +311,7 @@ export default function PersonaBibleMenu({
                   }
                 }
                 const isBookFinished = bookDoneCount === book.chapters && book.chapters > 0;
-
+                
                 return (
                   <motion.button
                     variants={itemLeft}
@@ -313,7 +321,7 @@ export default function PersonaBibleMenu({
                       setSelectedChapter(1);
                       if (window.innerWidth < 768) setMobileView('calendar');
                     }}
-                    className={`w-full group text-left px-6 py-4 mb-2 flex items-center justify-between transition-all relative ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'} ${
+                    className={`w-full group text-left px-6 py-4 mb-2 transition-all relative ${
                       uiStyle === 'dynamic' ? 'transform' : 'rounded-xl border border-white/10'
                     } ${
                       isSelected
@@ -321,29 +329,31 @@ export default function PersonaBibleMenu({
                         : (uiStyle === 'dynamic' ? 'bg-black/5 text-black/80 hover:bg-black/10 hover:-skew-x-3' : 'bg-black/20 text-white/80 hover:bg-black/40 hover:border-white/30')
                     }`}
                   >
-                    <div className="flex items-center gap-2 relative z-10">
-                      <span className={`text-lg md:text-xl tracking-wide ${uiStyle === 'dynamic' ? 'italic' : 'font-light'} ${isSelected ? (uiStyle === 'dynamic' ? 'text-black font-black' : 'text-white font-medium') : (uiStyle === 'dynamic' ? 'group-hover:text-black font-bold' : 'group-hover:text-white')}`}>
-                        {book.name}
-                      </span>
-                      {isBookFinished && (
-                        <span className="text-emerald-400 text-xs font-bold flex items-center" title="Libro completado">
-                          <Check size={14} className="stroke-[3]" />
+                    <div className="w-full flex items-center justify-between pointer-events-none">
+                      <div className="flex items-center gap-2 relative z-10">
+                        <span className={`text-lg md:text-xl tracking-wide ${uiStyle === 'dynamic' ? 'italic' : 'font-light'} ${isSelected ? (uiStyle === 'dynamic' ? 'text-black font-black' : 'text-white font-medium') : (uiStyle === 'dynamic' ? 'group-hover:text-black font-bold' : 'group-hover:text-white')}`}>
+                          {book.name}
                         </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-1.5 relative z-10">
-                      {bookDoneCount > 0 && !isBookFinished && (
-                        <span className="text-[10px] md:text-xs text-white/60 font-mono">
-                          {bookDoneCount}/{book.chapters}
-                        </span>
-                      )}
-                      <div className={`${
-                        uiStyle === 'dynamic' 
-                          ? 'bg-[#42f5e8] text-[#0b1040] font-black italic transform -skew-x-12 shadow-[2px_2px_0_rgba(0,0,0,0.15)]' 
-                          : 'bg-white/10 text-white/80 font-medium rounded-full border border-white/20'
-                      } text-xs md:text-sm px-2 py-0.5 md:px-3 md:py-1`}>
-                        {book.chapters} CAP.
+                        {isBookFinished && (
+                          <span className="text-emerald-400 text-xs font-bold flex items-center" title="Libro completado">
+                            <Check size={14} className="stroke-[3]" />
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-1.5 relative z-10">
+                        {bookDoneCount > 0 && !isBookFinished && (
+                          <span className="text-[10px] md:text-xs text-white/60 font-mono">
+                            {bookDoneCount}/{book.chapters}
+                          </span>
+                        )}
+                        <div className={`${
+                          uiStyle === 'dynamic' 
+                            ? 'bg-[#42f5e8] text-[#0b1040] font-black italic transform -skew-x-12 shadow-[2px_2px_0_rgba(0,0,0,0.15)]' 
+                            : 'bg-white/10 text-white/80 font-medium rounded-full border border-white/20'
+                        } text-xs md:text-sm px-2 py-0.5 md:px-3 md:py-1`}>
+                          {book.chapters} CAP.
+                        </div>
                       </div>
                     </div>
                   </motion.button>
@@ -360,7 +370,7 @@ export default function PersonaBibleMenu({
             <div className="flex-1 flex flex-col relative z-20 overflow-hidden">
               <div className="md:hidden flex justify-between items-center mb-6 shrink-0">
                 <span className={`text-2xl ${uiStyle === 'dynamic' ? 'font-black italic text-[#ffcc00]' : 'font-light text-cyan-300 tracking-wider uppercase'}`}>{selectedBook.name}</span>
-                <button onClick={() => setMobileView('list')} className={`text-sm bg-black/40 px-4 py-2 ${uiStyle === 'dynamic' ? 'font-black italic rounded' : 'font-medium rounded-full border border-white/20'}`}>
+                <button onClick={() => setMobileView('list')} className={` text-sm bg-black/40 px-4 py-2 ${uiStyle === 'dynamic' ? 'font-black italic rounded' : 'font-medium rounded-full border border-white/20'}`}>
                   VOLVER A LIBROS
                 </button>
               </div>
@@ -383,9 +393,8 @@ export default function PersonaBibleMenu({
                   const colIndex = (emptyDaysOffset + i) % 7;
                   const isSunday = colIndex === 0;
                   const isSaturday = colIndex === 6;
-
                   const isRead = !!completedChapters[`${selectedBook.name} ${chapterNum}`];
-
+                  
                   return (
                     <motion.button
                       key={chapterNum}
@@ -395,65 +404,67 @@ export default function PersonaBibleMenu({
                       onMouseEnter={() => setHoveredChapter(chapterNum)}
                       onMouseLeave={() => setHoveredChapter(null)}
                       onClick={() => handleReadChapter(chapterNum)}
-                      className={`relative aspect-square flex items-center justify-center cursor-pointer group ${i % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
+                      className={`relative aspect-square flex items-center justify-center cursor-pointer group `}
                     >
-                      {/* Read chapter completion dot or check */}
-                      {isRead && (
-                        <div className={`absolute top-0.5 right-0.5 z-20 flex items-center justify-center ${
-                          uiStyle === 'dynamic'
-                            ? 'w-3 h-3 bg-[#ffea29] text-black text-[8px] font-black rounded-sm shadow-[1px_1px_0_rgba(0,0,0,0.5)]'
-                            : 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]'
-                        }`} title="Capítulo leído">
-                          {uiStyle === 'dynamic' ? '✓' : null}
-                        </div>
-                      )}
+                      <div className="w-full h-full flex items-center justify-center relative">
+                        {/* Read chapter completion dot or check */}
+                        {isRead && (
+                          <div className={`absolute top-0.5 right-0.5 z-20 flex items-center justify-center ${
+                            uiStyle === 'dynamic'
+                              ? 'w-3 h-3 bg-[#ffea29] text-black text-[8px] font-black rounded-sm shadow-[1px_1px_0_rgba(0,0,0,0.5)]'
+                              : 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]'
+                          }`} title="Capítulo leído">
+                            {uiStyle === 'dynamic' ? '✓' : null}
+                          </div>
+                        )}
 
-                      {/* Hover Pink Accent or Serene Glass */}
-                      {isHovered && !isSelected && (
-                        uiStyle === 'dynamic' ? (
-                          <div 
-                            className="absolute -left-2 top-1 w-6 h-6 bg-[#ff0066] z-0" 
-                            style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} 
-                          />
-                        ) : (
-                          <div className="absolute inset-1 bg-white/10 rounded-full z-0" />
-                        )
-                      )}
-                      
-                      {/* Selected Backdrop */}
-                      {isSelected && (
-                        uiStyle === 'dynamic' ? (
-                          <motion.div 
-                            layoutId="selected-ring"
-                            className="absolute inset-[-10%] rounded-full border-4 border-[#ffcc00] z-0 opacity-80 mix-blend-screen"
-                          />
-                        ) : (
-                          <motion.div 
-                            layoutId="selected-ring-serene"
-                            className="absolute inset-0 rounded-full border border-cyan-400 bg-cyan-500/20 z-0 shadow-[0_0_15px_rgba(34,211,238,0.3)]"
-                          />
-                        )
-                      )}
-                      {isSelected && uiStyle === 'dynamic' && (
-                        <div className="absolute inset-0 rounded-full bg-[#ffcc00]/20 blur-md z-0" />
-                      )}
+                        {/* Hover Pink Accent or Serene Glass */}
+                        {isHovered && !isSelected && (
+                          uiStyle === 'dynamic' ? (
+                            <div 
+                              className="absolute -left-2 top-1 w-6 h-6 bg-[#ff0066] z-0" 
+                              style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} 
+                            />
+                          ) : (
+                            <div className="absolute inset-1 bg-white/10 rounded-full z-0" />
+                          )
+                        )}
+                        
+                        {/* Selected Backdrop */}
+                        {isSelected && (
+                          uiStyle === 'dynamic' ? (
+                            <motion.div 
+                              layoutId="selected-ring"
+                              className="absolute inset-[-10%] rounded-full border-4 border-[#ffcc00] z-0 opacity-80 mix-blend-screen"
+                            />
+                          ) : (
+                            <motion.div 
+                              layoutId="selected-ring-serene"
+                              className="absolute inset-0 rounded-full border border-cyan-400 bg-cyan-500/20 z-0 shadow-[0_0_15px_rgba(34,211,238,0.3)]"
+                            />
+                          )
+                        )}
+                        {isSelected && uiStyle === 'dynamic' && (
+                          <div className="absolute inset-0 rounded-full bg-[#ffcc00]/20 blur-md z-0" />
+                        )}
 
-                      {/* Number */}
-                      <span
-                        className={`text-xl md:text-3xl lg:text-4xl drop-shadow-lg z-10 transition-colors ${
-                          uiStyle === 'dynamic' ? 'font-black italic tracking-tighter' : 'font-light'
-                        } ${
-                          isSelected
-                            ? (uiStyle === 'dynamic' ? 'text-[#ffcc00] drop-shadow-[0_0_10px_rgba(255,204,0,0.8)]' : 'text-white font-medium')
-                            : (uiStyle === 'dynamic' && isSunday)
-                              ? 'text-[#ff0033]'
-                              : (uiStyle === 'dynamic' && isSaturday)
-                                ? 'text-cyan-300'
-                                : 'text-white'
-                        }`}
-                      >
-                        {chapterNum}
-                      </span>
+                        {/* Number */}
+                        <span
+                          className={`text-xl md:text-3xl lg:text-4xl drop-shadow-lg z-10 transition-colors ${
+                            uiStyle === 'dynamic' ? 'font-black italic tracking-tighter' : 'font-light'
+                          } ${
+                            isSelected
+                              ? (uiStyle === 'dynamic' ? 'text-[#ffcc00] drop-shadow-[0_0_10px_rgba(255,204,0,0.8)]' : 'text-white font-medium')
+                              : (uiStyle === 'dynamic' && isSunday)
+                                ? 'text-[#ff0033]'
+                                : (uiStyle === 'dynamic' && isSaturday)
+                                  ? 'text-cyan-300'
+                                  : 'text-white'
+                          }`}
+                        >
+                          {chapterNum}
+                        </span>
+                      </div>
                     </motion.button>
                   );
                 })}

@@ -18,6 +18,8 @@ interface SystemMenuProps {
   setParticlesEnabled: (enabled: boolean) => void;
   motionEffectsEnabled: boolean;
   setMotionEffectsEnabled: (enabled: boolean) => void;
+  deepTransitionsEnabled: boolean;
+  setDeepTransitionsEnabled: (enabled: boolean) => void;
   readingFontFamily: string;
   setReadingFontFamily: (font: string) => void;
   readingFontSize: FontSizeKey;
@@ -43,6 +45,8 @@ export default function SystemMenu({
   setParticlesEnabled,
   motionEffectsEnabled,
   setMotionEffectsEnabled,
+  deepTransitionsEnabled,
+  setDeepTransitionsEnabled,
   readingFontFamily,
   setReadingFontFamily,
   readingFontSize,
@@ -417,6 +421,17 @@ export default function SystemMenu({
                               type="checkbox" 
                               checked={motionEffectsEnabled} 
                               onChange={() => setMotionEffectsEnabled(!motionEffectsEnabled)}
+                              className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
+                            />
+                          </label>
+                          <label className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group ${
+                            uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/60 border-2 border-transparent hover:border-white/20 skew-x-[-10deg] text-white/90' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                          }`}>
+                            <span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>Transiciones Profundas</span>
+                            <input 
+                              type="checkbox" 
+                              checked={deepTransitionsEnabled} 
+                              onChange={() => setDeepTransitionsEnabled(!deepTransitionsEnabled)}
                               className={`accent-[#e52b22] w-5 h-5 cursor-pointer ${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}`}
                             />
                           </label>

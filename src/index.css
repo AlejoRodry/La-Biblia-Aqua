@@ -122,29 +122,72 @@
   to { background-position: 320px var(--wave-y, 0%); }
 }
 
-@keyframes underwater-float {
+@keyframes underwater-float-1 {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
   }
-  33% {
-    transform: translateY(-4px) rotate(0.5deg);
+  30% {
+    transform: translateY(-5px) translateX(1px) rotate(0.6deg);
   }
-  66% {
-    transform: translateY(3px) rotate(-0.5deg);
+  70% {
+    transform: translateY(4px) translateX(-1px) rotate(-0.6deg);
+  }
+}
+
+@keyframes underwater-float-2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  35% {
+    transform: translateY(4px) translateX(-1.5px) rotate(-0.7deg);
+  }
+  75% {
+    transform: translateY(-4.5px) translateX(1px) rotate(0.7deg);
+  }
+}
+
+@keyframes underwater-float-3 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-5px) translateX(-1px) rotate(0.4deg);
+  }
+  80% {
+    transform: translateY(3.5px) translateX(1.5px) rotate(-0.5deg);
+  }
+}
+
+@keyframes underwater-float-4 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(3.5px) translateX(1.5px) rotate(0.5deg);
+  }
+  65% {
+    transform: translateY(-4px) translateX(-1px) rotate(-0.6deg);
   }
 }
 
 .motion-effects-enabled .underwater-float {
-  animation: underwater-float 6s ease-in-out infinite;
+  animation: underwater-float-1 5.8s ease-in-out infinite;
   will-change: transform;
 }
 
 .motion-effects-enabled .underwater-float-delayed {
-  animation: underwater-float 7s ease-in-out infinite reverse;
+  animation: underwater-float-2 6.6s ease-in-out infinite;
   will-change: transform;
 }
 
 .motion-effects-enabled .underwater-float-slow {
-  animation: underwater-float 8s ease-in-out infinite 1s;
+  animation: underwater-float-3 8.2s ease-in-out infinite;
   will-change: transform;
 }
+
+.motion-effects-enabled .underwater-float-sway {
+  animation: underwater-float-4 5.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.motion-container-absolute { width: 100% !important; max-width: 42rem !important; margin: 0 auto !important; left: 0 !important; right: 0 !important; }

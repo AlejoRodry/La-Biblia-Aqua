@@ -1,34 +1,42 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/App.tsx', 'utf8');
 
-const regex = /<AnimatePresence mode="wait">[\s\S]*?<\/AnimatePresence>/m;
+const regex = /<div className=\{`flex flex-col min-h-\[100svh\] items-center px-3\.5 sm:px-6 md:px-12 \$\{\!result \? 'justify-center py-12' : 'justify-start pt-24 sm:pt-28 pb-12'\}\`\}>([\s\S]*?)<\/div>\s*<\/motion\.div>\s*(?=\{\/\* Global Persona 3 Style Calendar)/m;
 
-const replacement = `<AnimatePresence mode="wait">
+const match = code.match(regex);
+if (!match) {
+    console.log("No match");
+    process.exit(1);
+}
+
+// Ensure AnimatePresence is imported
+if (!code.includes('AnimatePresence')) {
+    code = code.replace("import { motion", "import { motion, AnimatePresence");
+}
+
+const replacement = `<div className="flex flex-col min-h-[100svh] items-center px-3.5 sm:px-6 md:px-12 relative overflow-hidden justify-start pt-24 sm:pt-28 pb-12">
+          <AnimatePresence mode="wait">
             {!result ? (
               <motion.div 
                 key="home-view"
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={{
-                  initial: { opacity: 0 },
-                  animate: { opacity: 1, transition: { staggerChildren: 0.1 } },
-                  exit: { opacity: 0, transition: { staggerChildren: 0.05, staggerDirection: -1, duration: deepTransitionsEnabled ? 0.8 : 0.3 } }
-                }}
-                className="w-full max-w-2xl flex flex-col items-center justify-center space-y-6 sm:space-y-8 mt-4 sm:mt-8 mb-8 sm:mb-12 mx-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={deepTransitionsEnabled ? { opacity: 0, y: '50vh', filter: 'blur(20px)', position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none' } : { opacity: 0 }}
+                transition={{ duration: deepTransitionsEnabled ? 0.6 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-2xl flex flex-col items-center justify-center space-y-6 sm:space-y-8 mt-4 sm:mt-8 mb-8 sm:mb-12 absolute inset-x-0 mx-auto"
+                style={{ top: '25%' }}
               >
-                {/* Header Title */}
-                <motion.div 
-                  variants={{
-                    initial: { opacity: 0, y: -20 },
-                    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-                    exit: deepTransitionsEnabled ? { opacity: 0, y: '60vh', filter: 'blur(25px)', transition: { duration: 0.7 } } : { opacity: 0 }
-                  }}
-                  className="relative flex items-center justify-center my-2 sm:my-4 max-w-full overflow-visible"
-                >
+                {/* Header & Search Bar */}
+                <div className="relative flex items-center justify-center my-2 sm:my-4 max-w-full overflow-visible">
                   {/* 1. True Outline Layer */}
                   <h1 className={\`absolute text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase leading-[1.1] font-black whitespace-nowrap select-none \${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}\`}
-                      style={{ color: 'white', filter: 'url(#true-outline)', WebkitTextStroke: '0px', fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', padding: '0.05em 0.15em' }}
+                      style={{ 
+                        color: 'white',
+                        filter: 'url(#true-outline)',
+                        WebkitTextStroke: '0px',
+                        fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        padding: '0.05em 0.15em',
+                      }}
                       aria-hidden="true">
                     BIBLIA
                   </h1>
@@ -37,17 +45,9 @@ const replacement = `<AnimatePresence mode="wait">
                   <h1 className={\`relative text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] title-outline font-black whitespace-nowrap select-none \${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}\`}>
                     BIBLIA
                   </h1>
-                </motion.div>
+                </div>
 
-                {/* Search Bar & Quick Expl. */}
-                <motion.div 
-                  variants={{
-                    initial: { opacity: 0, y: 20 },
-                    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-                    exit: deepTransitionsEnabled ? { opacity: 0, y: '45vh', filter: 'blur(15px)', transition: { duration: 0.6 } } : { opacity: 0 }
-                  }}
-                  className="w-full flex flex-col space-y-4 sm:space-y-5"
-                >
+                <div className="w-full flex flex-col space-y-4 sm:space-y-5">
                   <form onSubmit={handleSearch} className="w-full relative group underwater-float">
                       <input
                         type="text"
@@ -66,7 +66,10 @@ const replacement = `<AnimatePresence mode="wait">
                         className="absolute inset-y-1.5 sm:inset-y-2 right-1.5 sm:right-2 w-11 sm:w-12 flex items-center justify-center bg-black/20 hover:bg-black/40 border border-white/20 backdrop-blur-md rounded-xl text-white transition-all shadow-[0_4px_16px_rgba(0,0,0,0.3)] disabled:opacity-50"
                       >
                       {loading ? (
-                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
                           <Search size={20} />
                         </motion.div>
                       ) : (
@@ -108,14 +111,13 @@ const replacement = `<AnimatePresence mode="wait">
                       ))}
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Error Message */}
                 {error && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
                     className="w-full p-4 bg-red-900/30 backdrop-blur-md border border-red-400/30 rounded-2xl text-red-100 text-center shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
                   >
                     {error}
@@ -123,14 +125,7 @@ const replacement = `<AnimatePresence mode="wait">
                 )}
 
                 {/* History & Recommendations */}
-                <motion.div 
-                  variants={{
-                    initial: { opacity: 0, y: 30 },
-                    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-                    exit: deepTransitionsEnabled ? { opacity: 0, y: '30vh', filter: 'blur(10px)', transition: { duration: 0.5 } } : { opacity: 0 }
-                  }}
-                  className="w-full max-w-3xl mt-8 mb-8 flex flex-col gap-6"
-                >
+                <div className="w-full max-w-3xl mt-8 mb-8 flex flex-col gap-6">
                   {/* Verse of the Day */}
                   <div 
                     onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
@@ -214,14 +209,14 @@ const replacement = `<AnimatePresence mode="wait">
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
             ) : (
               <motion.div 
                 key="results-view"
-                initial={deepTransitionsEnabled ? { opacity: 0, y: '-10vh', filter: 'blur(10px)' } : { opacity: 0, y: 20 }}
+                initial={deepTransitionsEnabled ? { opacity: 0, y: '-20vh', filter: 'blur(10px)' } : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={deepTransitionsEnabled ? { opacity: 0, y: '50vh', filter: 'blur(20px)' } : { opacity: 0, y: 20 }}
+                exit={deepTransitionsEnabled ? { opacity: 0, y: '50vh', filter: 'blur(20px)', position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none' } : { opacity: 0, y: 20 }}
                 transition={{ duration: deepTransitionsEnabled ? 0.6 : 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="w-full max-w-4xl flex flex-col items-center justify-start space-y-6"
               >
@@ -266,8 +261,11 @@ const replacement = `<AnimatePresence mode="wait">
                 )}
               </motion.div>
             )}
-          </AnimatePresence>`;
+          </AnimatePresence>
+        </div>
+      </motion.div>
+`;
 
 code = code.replace(regex, replacement);
 fs.writeFileSync('src/App.tsx', code);
-console.log("App.tsx patched");
+console.log("Replaced successfully.");
