@@ -160,11 +160,11 @@ export default function SystemMenu({
             onClick={onClose} 
             className={`absolute top-6 right-6 md:top-8 md:right-8 z-[250] flex items-center justify-center transition-all ${
               uiStyle === 'dynamic' 
-                ? 'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-[4px] border-[#81e6e6] skew-x-[-15deg] shadow-[6px_6px_0_rgba(0,0,0,0.8)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.8)]' 
+                ? 'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-2 md:border-4 border-white transform -skew-x-12 shadow-[4px_4px_0_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.3)]' 
                 : 'w-12 h-12 md:w-14 md:h-14 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full border border-white/20 hover:border-white/50 text-white shadow-lg'
             }`}
           >
-            <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black' : ''} />
+            <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[12deg]' : ''} />
           </motion.button>
           {/* Base opaque background to block main App UI + isolated WaterBackground */}
           <div className="absolute inset-0 opacity-80">
@@ -287,7 +287,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   {/* Des-sesgar el contenido interno si es dinámico */}
                   <div className="flex flex-col h-full relative z-10">
@@ -341,7 +341,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {uiStyle === 'dynamic' && (
@@ -361,11 +361,11 @@ export default function SystemMenu({
                               type="button"
                               onClick={() => setUiStyle('serene')}
                               className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
+                                uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
                               } ${
                                 uiStyle === 'serene' 
                                   ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-                                  : (uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[#333] hover:border-[#81e6e6] text-white/70 hover:text-white shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
+                                  : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
                               }`}
                             >
                               <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
@@ -377,10 +377,10 @@ export default function SystemMenu({
                               type="button"
                               onClick={() => setUiStyle('dynamic')}
                               className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
+                                uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
                               } ${
                                 uiStyle === 'dynamic' 
-                                  ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-[#81e6e6] shadow-[4px_4px_0_rgba(129,230,230,0.4)]' 
+                                  ? 'bg-[#81e6e6]/25 border-[#81e6e6] text-[#81e6e6] shadow-[0_0_15px_rgba(129,230,230,0.3)]' 
                                   : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
                               }`}
                             >
@@ -402,7 +402,7 @@ export default function SystemMenu({
                             <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Agua Animada</span>
                             {uiStyle === 'dynamic' ? (
                               <div onClick={(e) => { e.preventDefault(); setBgEnabled(!bgEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${bgEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{bgEnabled ? 'ON' : 'OFF'}</span>
+                                <span className={`font-black italic text-base md:text-lg ${bgEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{bgEnabled ? 'ON' : 'OFF'}</span>
                               </div>
                             ) : (
                               <input 
@@ -419,7 +419,7 @@ export default function SystemMenu({
                             <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Partículas</span>
                             {uiStyle === 'dynamic' ? (
                               <div onClick={(e) => { e.preventDefault(); setParticlesEnabled(!particlesEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${particlesEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{particlesEnabled ? 'ON' : 'OFF'}</span>
+                                <span className={`font-black italic text-base md:text-lg ${particlesEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{particlesEnabled ? 'ON' : 'OFF'}</span>
                               </div>
                             ) : (
                               <input 
@@ -436,7 +436,7 @@ export default function SystemMenu({
                             <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Movimiento Acuático</span>
                             {uiStyle === 'dynamic' ? (
                               <div onClick={(e) => { e.preventDefault(); setMotionEffectsEnabled(!motionEffectsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${motionEffectsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{motionEffectsEnabled ? 'ON' : 'OFF'}</span>
+                                <span className={`font-black italic text-base md:text-lg ${motionEffectsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{motionEffectsEnabled ? 'ON' : 'OFF'}</span>
                               </div>
                             ) : (
                               <input 
@@ -453,7 +453,7 @@ export default function SystemMenu({
                             <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Transiciones Profundas</span>
                             {uiStyle === 'dynamic' ? (
                               <div onClick={(e) => { e.preventDefault(); setDeepTransitionsEnabled(!deepTransitionsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${deepTransitionsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{deepTransitionsEnabled ? 'ON' : 'OFF'}</span>
+                                <span className={`font-black italic text-base md:text-lg ${deepTransitionsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{deepTransitionsEnabled ? 'ON' : 'OFF'}</span>
                               </div>
                             ) : (
                               <input 
@@ -484,11 +484,11 @@ export default function SystemMenu({
                               type="button"
                               onClick={() => setTimeMode(mode.id as 'auto' | WaterTheme)}
                               className={`flex items-center space-x-3 w-full px-5 py-4 md:px-6 md:py-5 text-base md:text-lg transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
+                                uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
                               } ${
                                 timeMode === mode.id 
-                                  ? (uiStyle === 'dynamic' ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-white shadow-[4px_4px_0_rgba(129,230,230,0.4)]' : 'bg-white/15 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]')
-                                  : (uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[#333] hover:border-[#81e6e6] text-white/70 hover:text-white shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
+                                  ? (uiStyle === 'dynamic' ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-white shadow-[0_0_15px_rgba(129,230,230,0.3)]' : 'bg-white/15 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]')
+                                  : (uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/80 border-transparent text-white/70 hover:text-white hover:border-[#81e6e6]/50' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
                               }`}
                             >
                               <div className={`flex items-center space-x-3 w-full ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
@@ -522,7 +522,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {uiStyle === 'dynamic' && (

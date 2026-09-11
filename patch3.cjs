@@ -1,12 +1,15 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/components/PersonaBibleMenu.tsx', 'utf8');
+let code = fs.readFileSync('src/components/SystemMenu.tsx', 'utf-8');
 
-// Remove remaining underwater-float from small elements in PersonaBibleMenu to fix the "floating bits" issue,
-// and instead, we can apply one single gentle float to the whole container if desired, but for now just removing them is safer to stop the bug.
-code = code.replace(/underwater-float-delayed/g, '');
-code = code.replace(/underwater-float-slow/g, '');
-code = code.replace(/underwater-float-sway/g, '');
-code = code.replace(/underwater-float/g, '');
+code = code.replace(
+  /'w-12 h-12 md:w-14 md:h-14 bg-\[\#111\] hover:bg-\[\#ff0066\] text-white border-2 md:border-4 border-white transform -skew-x-12 shadow-\[4px_4px_0_rgba\(0,0,0,0\.3\)\] active:translate-y-1 active:shadow-\[2px_2px_0_rgba\(0,0,0,0\.3\)\]'/g,
+  "'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-[4px] border-[#81e6e6] skew-x-[-15deg] shadow-[6px_6px_0_rgba(0,0,0,0.8)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.8)]'"
+);
 
-fs.writeFileSync('src/components/PersonaBibleMenu.tsx', code);
-console.log("Cleaned all float classes from PersonaBibleMenu.");
+code = code.replace(
+  /<X size=\{28\} className=\{uiStyle === 'dynamic' \? 'skew-x-\[12deg\]' : ''\} \/>/g,
+  "<X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black' : ''} />"
+);
+
+fs.writeFileSync('src/components/SystemMenu.tsx', code);
+console.log('done');

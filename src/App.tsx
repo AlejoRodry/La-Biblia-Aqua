@@ -253,6 +253,9 @@ export default function App() {
     localStorage.setItem('bible_ui_style', uiStyle);
   }, [uiStyle]);
 
+  const [isVerseFocused, setIsVerseFocused] = useState(false);
+  const [dismissFocusTrigger, setDismissFocusTrigger] = useState(0);
+
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   useEffect(() => {
@@ -385,6 +388,7 @@ export default function App() {
   };
 
   const handleBack = () => {
+    setIsVerseFocused(false);
     setDiveState('diving');
     setTimeout(() => {
       setResult(null);
@@ -411,6 +415,14 @@ export default function App() {
       <div className="fixed inset-0 z-[-1]">
         <WaterBackground theme={activeTheme} showBackground={bgEnabled} showParticles={particlesEnabled} />
       </div>
+
+      {/* Global Full-Screen Focus Mode Backdrop - seamlessly covers 100% of the viewport */}
+      <div 
+        className={`fixed inset-0 z-[5] bg-black/65 backdrop-blur-[2px] transition-opacity duration-300 ${
+          isVerseFocused ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setDismissFocusTrigger(prev => prev + 1)}
+      />
       
       {/* Vectorial Dive Overlay for Transitions */}
       <motion.div
@@ -493,7 +505,7 @@ export default function App() {
         style={{ display: sidebarOpen ? 'none' : 'block' }}
       >
         {/* Top Navigation Bar: Left (Back / Library) & Right (Streak / Settings) */}
-        <div className="absolute top-3.5 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 z-40 flex items-start justify-between pointer-events-none">
+        <div className="absolute top-3.5 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 z-[100] flex items-start justify-between pointer-events-none">
           <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
             {result && (
               <button 
@@ -868,6 +880,8 @@ export default function App() {
                         : false
                     }
                     onToggleChapterCompleted={handleToggleChapterCompleted}
+                    onVerseFocusChange={setIsVerseFocused}
+                    dismissFocusTrigger={dismissFocusTrigger}
                   />
                 )}
               </motion.div>

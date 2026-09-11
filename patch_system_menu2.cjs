@@ -9,26 +9,20 @@ code = code.replace(/bg-blue-950\/95 border-4 border-\[#81e6e6\] rounded-2xl sha
 
 // Also there is another one for the main screen which has its own string.
 code = code.replace(/max-w-xl' : 'max-w-2xl bg-black\/40 backdrop-blur-xl border border-white\/20 rounded-2xl md:rounded-3xl p-6 md:p-10'\}/g,
-"max-w-xl bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'max-w-2xl bg-black/40 backdrop-blur-xl border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10'}");
+"max-w-xl bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)] p-6' : 'max-w-2xl bg-black/40 backdrop-blur-xl border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10'}");
 
-// Wait, the main screen wrapper in SystemMenu is:
-// className={`w-full ${uiStyle === 'dynamic' ? 'max-w-xl' : 'max-w-2xl bg-black/40 backdrop-blur-xl border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10'} max-h-[85vh] overflow-y-auto custom-scrollbar`}
-// The screenshot shows the right panel for "EFECTOS", which is `screen === 'visual'`.
-
-// Let's modify the checkboxes specifically in the 'visual' screen first.
-// The checkboxes are wrapped in label with `type="checkbox"`. We will replace them with custom stylized buttons if `uiStyle === 'dynamic'`.
-// But wait, there are several checkboxes.
-// Agua Animada, Partículas, Movimiento Acuático, Transiciones Profundas
-
-// We can replace the input tag with a dynamic renderer.
 function replaceCheckbox(labelName, stateName, setterName) {
-  const regex = new RegExp(
-    `(<label className={\`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group \\\\$\\{[\\s\\S]*?\\}\\`}>[\\s\\S]*?<span className=\\{uiStyle === 'dynamic' \\? 'skew-x-\\[10deg\\] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'\\}>${labelName}<\\/span>\\s*)<input[\\s\\S]*?type="checkbox"[\\s\\S]*?\\/>(\\s*<\\/label>)`
-  );
-  
-  const replacement = `$1
+  let searchStr = `<span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>${labelName}</span>
+                            <input 
+                              type="checkbox" 
+                              checked={${stateName}} 
+                              onChange={() => ${setterName}(!${stateName})}
+                              className={\`accent-[#e52b22] w-5 h-5 cursor-pointer \${uiStyle === 'dynamic' ? 'skew-x-[10deg]' : ''}\`}
+                            />`;
+                            
+  let replaceStr = `<span className={uiStyle === 'dynamic' ? 'skew-x-[10deg] font-black italic uppercase tracking-wide' : 'font-light tracking-widest uppercase'}>${labelName}</span>
                             {uiStyle === 'dynamic' ? (
-                              <div onClick={() => ${setterName}(!${stateName})} className="flex items-center justify-center skew-x-[10deg] border-2 border-white/30 bg-black w-14 h-8 transition-colors group-hover:border-[#81e6e6]">
+                              <div onClick={(e) => { e.preventDefault(); ${setterName}(!${stateName}); }} className="flex items-center justify-center skew-x-[10deg] border-2 border-[#555] bg-black w-14 h-8 transition-colors group-hover:border-[#81e6e6]">
                                 <span className={\`font-black italic text-sm \${${stateName} ? 'text-[#81e6e6]' : 'text-white/30'}\`}>{${stateName} ? 'ON' : 'OFF'}</span>
                               </div>
                             ) : (
@@ -38,9 +32,9 @@ function replaceCheckbox(labelName, stateName, setterName) {
                                 onChange={() => ${setterName}(!${stateName})}
                                 className="accent-[#e52b22] w-5 h-5 cursor-pointer"
                               />
-                            )}
-$2`;
-  code = code.replace(regex, replacement);
+                            )}`;
+                            
+  code = code.replace(searchStr, replaceStr);
 }
 
 replaceCheckbox('Agua Animada', 'bgEnabled', 'setBgEnabled');
