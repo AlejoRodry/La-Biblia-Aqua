@@ -412,16 +412,24 @@ export default function App() {
         </defs>
       </svg>
 
-      <div className="fixed inset-0 z-[-1]">
+      {/* Dynamic Water Canvas */}
+      <div 
+        className={`fixed inset-0 z-[-1] transition-opacity duration-500 ease-out ${
+          isVerseFocused ? 'pointer-events-none' : ''
+        }`}
+      >
         <WaterBackground theme={activeTheme} showBackground={bgEnabled} showParticles={particlesEnabled} />
       </div>
 
       {/* Global Full-Screen Focus Mode Backdrop - seamlessly covers 100% of the viewport */}
       <div 
-        className={`fixed inset-0 z-[5] bg-black/65 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[5] bg-black/70 backdrop-blur-2xl transition-all duration-500 ${
           isVerseFocused ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={() => setDismissFocusTrigger(prev => prev + 1)}
+        onClick={() => {
+          setDismissFocusTrigger(prev => prev + 1);
+          setIsVerseFocused(false);
+        }}
       />
       
       {/* Vectorial Dive Overlay for Transitions */}
@@ -505,7 +513,9 @@ export default function App() {
         style={{ display: sidebarOpen ? 'none' : 'block' }}
       >
         {/* Top Navigation Bar: Left (Back / Library) & Right (Streak / Settings) */}
-        <div className="absolute top-3.5 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 z-[100] flex items-start justify-between pointer-events-none">
+        <div className={`absolute top-3.5 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 z-[100] flex items-start justify-between pointer-events-none transition-opacity duration-300 ${
+          isVerseFocused ? 'opacity-40 hover:opacity-100' : 'opacity-100'
+        }`}>
           <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
             {result && (
               <button 
@@ -640,7 +650,7 @@ export default function App() {
                 >
                   {/* 1. True Outline Layer */}
                   <h1 className={`absolute text-6xl min-[360px]:text-[4.2rem] min-[400px]:text-7xl sm:text-8xl md:text-9xl tracking-[0.14em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase leading-[1.1] font-black whitespace-nowrap select-none ${uiStyle === 'dynamic' ? 'italic transform -skew-x-[10deg]' : ''}`}
-                      style={{ color: 'white', filter: 'url(#true-outline)', WebkitTextStroke: '0px', fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', padding: '0.05em 0.15em' }}
+                      style={{ color: 'white', filter: 'url(#true-outline)', WebkitTextStroke: '0px', fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", padding: '0.05em 0.15em' }}
                       aria-hidden="true">
                     BIBLIA
                   </h1>
@@ -743,21 +753,25 @@ export default function App() {
                       animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
                       exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '-70vw', rotate: -15, filter: 'blur(35px)', transition: { duration: 7.0, ease: 'linear' } } : { opacity: 0 }
                     }}
-                    onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
-                    className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative underwater-float"
+                    className="w-full"
                   >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Sparkles size={16} className="text-cyan-300" />
-                          <span className="text-xs font-bold tracking-widest text-cyan-200 uppercase">Versículo del Día</span>
+                    <div
+                      onClick={() => handleSearch(undefined, verseOfTheDay.ref)}
+                      className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/20 hover:border-cyan-400/50 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all overflow-hidden relative underwater-float"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-3xl rounded-full -mt-10 -mr-10 pointer-events-none" />
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Sparkles size={16} className="text-cyan-300" />
+                            <span className="text-xs font-bold tracking-widest text-cyan-200 uppercase">Versículo del Día</span>
+                          </div>
+                          <p className="text-white text-lg sm:text-xl font-medium leading-relaxed mb-3 drop-shadow-md">"{verseOfTheDay.text}"</p>
+                          <p className="text-white/60 font-semibold text-sm">— {verseOfTheDay.ref}</p>
                         </div>
-                        <p className="text-white text-lg sm:text-xl font-medium leading-relaxed mb-3 drop-shadow-md">"{verseOfTheDay.text}"</p>
-                        <p className="text-white/60 font-semibold text-sm">— {verseOfTheDay.ref}</p>
-                      </div>
-                      <div className="hidden sm:flex shrink-0 bg-white/10 group-hover:bg-cyan-500/20 p-3 rounded-full transition-colors">
-                        <ArrowRight size={20} className="text-white group-hover:text-cyan-300 transition-colors" />
+                        <div className="hidden sm:flex shrink-0 bg-white/10 group-hover:bg-cyan-500/20 p-3 rounded-full transition-colors">
+                          <ArrowRight size={20} className="text-white group-hover:text-cyan-300 transition-colors" />
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -768,36 +782,38 @@ export default function App() {
                       initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 30 },
                       animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
                       exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '-50vw', rotate: -30, filter: 'blur(20px)', transition: { duration: 7.5, ease: 'linear' } } : { opacity: 0 }
-                    }} className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float-delayed">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-medium flex items-center drop-shadow-md">
-                          <History size={18} className="mr-2 text-cyan-300" /> Búsquedas Recientes
-                        </h3>
-                        {recentSearches.length > 0 && (
-                          <button
-                            onClick={() => {
-                              setRecentSearches([]);
-                              localStorage.removeItem('bible_recent_searches');
-                            }}
-                            className="underwater-float-delayed text-xs text-white/50 hover:text-white/80 transition-colors"
-                          >
-                            Limpiar
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        {recentSearches.length > 0 ? recentSearches.slice(0, 5).map((item, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleSearch(undefined, item)}
-                            className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
-                          >
-                            <span>{item}</span>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
-                          </button>
-                        )) : (
-                          <p className="text-white/60 text-sm italic px-2">No hay búsquedas recientes aún.</p>
-                        )}
+                    }} className="w-full">
+                      <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] h-full underwater-float-delayed">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-white font-medium flex items-center drop-shadow-md">
+                            <History size={18} className="mr-2 text-cyan-300" /> Búsquedas Recientes
+                          </h3>
+                          {recentSearches.length > 0 && (
+                            <button
+                              onClick={() => {
+                                setRecentSearches([]);
+                                localStorage.removeItem('bible_recent_searches');
+                              }}
+                              className="underwater-float-delayed text-xs text-white/50 hover:text-white/80 transition-colors"
+                            >
+                              Limpiar
+                            </button>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          {recentSearches.length > 0 ? recentSearches.slice(0, 5).map((item, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSearch(undefined, item)}
+                              className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float' : 'underwater-float-delayed'}`}
+                            >
+                              <span>{item}</span>
+                              <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
+                            </button>
+                          )) : (
+                            <p className="text-white/60 text-sm italic px-2">No hay búsquedas recientes aún.</p>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
 
@@ -806,29 +822,31 @@ export default function App() {
                       initial: deepTransitionsEnabled ? { opacity: 1, y: '-100vh', scale: 0.4 } : { opacity: 0, y: 30 },
                       animate: deepTransitionsEnabled ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.5, type: 'spring', bounce: 0.3 } } : { opacity: 1, y: 0 },
                       exit: deepTransitionsEnabled ? { opacity: 1, y: '160vh', x: '70vw', rotate: 35, filter: 'blur(25px)', transition: { duration: 6.2, ease: 'linear' } } : { opacity: 0 }
-                    }} className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] underwater-float">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-medium flex items-center drop-shadow-md">
-                          <Sparkles size={18} className="mr-2 text-amber-300" /> Recomendaciones
-                        </h3>
-                        <button
-                          onClick={shuffleSuggestions}
-                          className="underwater-float-slow text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
-                        >
-                          <RotateCw size={12} /> Variar
-                        </button>
-                      </div>
-                      <div className="space-y-2">
-                        {suggestedPassages.slice(0, 5).map((item, idx) => (
+                    }} className="w-full">
+                      <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] h-full underwater-float">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-white font-medium flex items-center drop-shadow-md">
+                            <Sparkles size={18} className="mr-2 text-amber-300" /> Recomendaciones
+                          </h3>
                           <button
-                            key={`${item}-${idx}`}
-                            onClick={() => handleSearch(undefined, item)}
-                            className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float-delayed' : 'underwater-float'}`}
+                            onClick={shuffleSuggestions}
+                            className="underwater-float-slow text-xs text-cyan-300/80 hover:text-cyan-200 flex items-center gap-1 transition-colors"
                           >
-                            <span>{item}</span>
-                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
+                            <RotateCw size={12} /> Variar
                           </button>
-                        ))}
+                        </div>
+                        <div className="space-y-2">
+                          {suggestedPassages.slice(0, 5).map((item, idx) => (
+                            <button
+                              key={`${item}-${idx}`}
+                              onClick={() => handleSearch(undefined, item)}
+                              className={`w-full text-left px-4 py-3 bg-black/20 hover:bg-black/40 rounded-xl text-white text-sm transition-colors border border-white/10 hover:border-white/30 flex justify-between items-center group ${idx % 2 === 0 ? 'underwater-float-delayed' : 'underwater-float'}`}
+                            >
+                              <span>{item}</span>
+                              <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-300" />
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   </div>

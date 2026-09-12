@@ -104,15 +104,15 @@
 
 
 .watermark-progress {
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   color: transparent;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,100 C75,108 125,92 200,100 C275,108 325,92 400,100 L400,200 L0,200 Z' fill='rgba(165,243,252,0.3)'/%3E%3C/svg%3E") repeat-x;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,100 C75,108 125,92 200,100 C275,108 325,92 400,100 L400,200 L0,200 Z' fill='rgba(255,255,255,0.2)'/%3E%3C/svg%3E") repeat-x;
   background-size: 320px 200%;
   background-position: 0px var(--wave-y, 0%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15);
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15); stroke-linejoin: round; paint-order: stroke fill;
   animation: watermarkProgressWave 8s linear infinite;
   will-change: background-position;
 }

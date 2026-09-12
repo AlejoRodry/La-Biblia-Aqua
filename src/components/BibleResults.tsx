@@ -442,15 +442,16 @@ export default function BibleResults({
       )}
 
       {/* Giant Chapter Number Background (Filling Up) */}
-      {result.type === 'passage' && currentChapterNumber && (
+      {typeof document !== 'undefined' && result.type === 'passage' && currentChapterNumber && createPortal(
         <div 
-          className="fixed bottom-[-4rem] right-2 md:right-8 text-[16rem] sm:text-[20rem] md:text-[26rem] leading-none font-black select-none pointer-events-none z-0 blur-[2px] opacity-40 watermark-progress"
+          className={`fixed bottom-[-4rem] right-2 md:right-8 text-[16rem] sm:text-[20rem] md:text-[26rem] leading-none font-black select-none pointer-events-none z-[6] transition-opacity duration-500 watermark-progress ${focusedVerse ? 'opacity-20' : 'opacity-40'}`}
           style={{ 
             '--wave-y': `${scrollProgress * 100}%`
           } as React.CSSProperties}
         >
           {currentChapterNumber}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Main Content Area */}
@@ -778,9 +779,11 @@ export default function BibleResults({
                     }}
                     className={`font-normal drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] cursor-pointer transition-all duration-300 rounded-lg p-3 -mx-3  ${highlightClasses} ${
                       isFocused 
-                        ? 'text-cyan-100 bg-white/10 scale-[1.02] relative z-[70] shadow-2xl ring-1 ring-cyan-400/30' 
+                        ? (uiStyle === 'dynamic'
+                            ? 'text-cyan-100 bg-black/90 border-2 border-[#00e5ff] scale-[1.02] relative z-[70] shadow-[0_0_35px_rgba(0,229,255,0.4)] ring-1 ring-[#00e5ff]/50'
+                            : 'text-cyan-100 bg-slate-900/90 border border-cyan-400/50 scale-[1.02] relative z-[70] shadow-2xl ring-1 ring-cyan-400/40')
                         : isDimmed
-                        ? 'text-white/30 blur-[2px] relative z-[60]'
+                        ? 'text-white/20 blur-[1.5px] opacity-40 relative z-[60]'
                         : highlightClasses
                           ? '' // Keep the highlight text color
                           : 'text-white hover:text-cyan-100 hover:bg-white/5'
@@ -872,10 +875,11 @@ export default function BibleResults({
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[250] px-2 sm:px-4 py-2 sm:py-3 shadow-[0_16px_50px_rgba(0,0,0,0.8)] flex flex-col items-stretch max-w-[98vw] sm:max-w-[85vw] md:max-w-[620px] w-fit pointer-events-auto ${
+              onClick={(e) => e.stopPropagation()}
+              className={`fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-[999] px-2.5 sm:px-4 py-2 sm:py-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col items-stretch max-w-[96vw] sm:max-w-[85vw] md:max-w-[620px] w-fit pointer-events-auto select-none ${
                 uiStyle === 'dynamic' 
-                  ? 'bg-black/95 border-2 border-[#00e5ff] shadow-[0_0_25px_rgba(0,229,255,0.4)] rounded-xl backdrop-blur-md' 
-                  : 'bg-black/80 backdrop-blur-xl border border-white/25 rounded-[2rem]'
+                  ? 'bg-black/95 border-2 border-[#00e5ff] shadow-[0_0_30px_rgba(0,229,255,0.4)] rounded-xl backdrop-blur-md' 
+                  : 'bg-black/90 backdrop-blur-xl border border-white/25 rounded-[2rem]'
               }`}
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
