@@ -49,19 +49,89 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
+/* Quitar completamente las barras de desplazamiento horizontales y conservar solo las verticales */
+*::-webkit-scrollbar:horizontal,
+::-webkit-scrollbar:horizontal {
+  display: none !important;
+  height: 0px !important;
+  max-height: 0px !important;
+  width: 0px !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+*::-webkit-scrollbar-thumb:horizontal,
+*::-webkit-scrollbar-track:horizontal,
+*::-webkit-scrollbar-corner,
+::-webkit-scrollbar-thumb:horizontal,
+::-webkit-scrollbar-track:horizontal,
+::-webkit-scrollbar-corner {
+  display: none !important;
+  height: 0px !important;
+  max-height: 0px !important;
+  width: 0px !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Conservar únicamente las barras verticales con diseño Persona / Sereno */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 0px !important;
+}
+
+::-webkit-scrollbar:vertical {
   width: 6px;
 }
+
+.custom-scrollbar {
+  overflow-x: hidden !important;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 0px !important;
+}
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(0, 255, 255, 0.3);
   border-radius: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 255, 255, 0.5);
+}
+
+/* Utilidad universal para silenciar scrollbars en Android / Chrome / iOS / Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb,
+.no-scrollbar::-webkit-scrollbar-track {
+  display: none !important;
+  height: 0px !important;
+  background: transparent !important;
 }
 
 .watermark-chapter {

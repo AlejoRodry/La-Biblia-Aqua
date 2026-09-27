@@ -174,7 +174,7 @@ export default function TypographyControl({
       <div className={`text-xs md:text-sm uppercase tracking-widest inline-block px-4 py-1.5 mb-4 ${uiStyle === 'dynamic' ? 'bg-[#81e6e6] text-black font-black italic' : 'font-medium text-white/50'}`}><span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>
         Números de Capítulo</span>
         </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {NUMBER_FONTS.map((font) => {
           const isSelected = numberFontFamily === font.id;
           return (
@@ -222,15 +222,17 @@ export default function TypographyControl({
 
   if (layout === 'grid') {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 items-start pb-10">
-        <div className="space-y-8 flex flex-col">
-          {renderSize()}
-          {renderSpacing()}
-          {showPreview && renderPreview()}
-        </div>
-        <div className="space-y-8 flex flex-col">
-          {renderType()}
-          {showNumberFont && numberFontFamily && setNumberFontFamily && renderNumber()}
+      <div className="w-full pb-10 overflow-x-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start w-full">
+          <div className="w-full space-y-8 flex flex-col">
+            {renderSize()}
+            {renderSpacing()}
+            {showPreview && renderPreview()}
+          </div>
+          <div className="w-full space-y-8 flex flex-col">
+            {renderType()}
+            {showNumberFont && numberFontFamily && setNumberFontFamily && renderNumber()}
+          </div>
         </div>
       </div>
     );

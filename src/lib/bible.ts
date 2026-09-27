@@ -124,7 +124,10 @@ export async function getBibleData() {
   // 1b. Fallback to direct GitHub raw data (for static hosts like GitHub Pages)
   if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
     try {
-      const res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr.json');
+      let res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr1960.json');
+      if (!res.ok) {
+        res = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr.json');
+      }
       if (res.ok) {
         let text = await res.text();
         if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);

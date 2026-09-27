@@ -95,8 +95,11 @@ export default function BookmarksModal({
           </div>
 
           {/* Main Modal Container with smooth scroll mask */}
-          <div className="relative z-20 w-full h-full pt-28 md:pt-32 pb-8 px-4 sm:px-6 md:px-12 flex justify-center items-stretch">
-            <div className="w-full max-w-5xl h-full flex flex-col overflow-y-auto custom-scrollbar pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)] -my-4 py-6">
+          <div className="relative z-20 w-full h-full pt-28 md:pt-32 pb-8 px-3 sm:px-6 md:px-12 flex justify-center items-stretch overflow-hidden">
+            <div 
+              className="w-full max-w-5xl h-full flex flex-col overflow-y-auto overflow-x-hidden overscroll-contain custom-scrollbar pr-1 sm:pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)] -my-4 py-6"
+              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+            >
               
               {/* Tabs & Search Row */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-4 shrink-0">

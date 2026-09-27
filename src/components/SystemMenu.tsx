@@ -1,25 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Sun, Moon, Sunrise, Sunset, Palette, Type, X, ChevronLeft, Wifi, WifiOff, CheckCircle2, Download, Smartphone, HardDrive, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Palette, HardDrive, Smartphone, RefreshCw, CheckCircle2, Wifi, WifiOff, X, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
 import TypographyControl from './TypographyControl';
 import WaterBackground, { WaterTheme } from './WaterBackground';
 import { FontSizeKey, LineHeightKey } from '../lib/typography';
-import { getOfflineStatus, saveBibleToIndexedDB, promptPWAInstall, subscribeToInstallPrompt } from '../lib/offlineBible';
+import { getOfflineStatus, promptPWAInstall, subscribeToInstallPrompt } from '../lib/offlineBible';
+import { getBibleData } from '../lib/bible';
 
 interface SystemMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  timeMode: 'auto' | WaterTheme;
-  setTimeMode: (mode: 'auto' | WaterTheme) => void;
-  activeTheme: WaterTheme;
-  bgEnabled: boolean;
-  setBgEnabled: (enabled: boolean) => void;
-  particlesEnabled: boolean;
-  setParticlesEnabled: (enabled: boolean) => void;
-  motionEffectsEnabled: boolean;
-  setMotionEffectsEnabled: (enabled: boolean) => void;
-  deepTransitionsEnabled: boolean;
-  setDeepTransitionsEnabled: (enabled: boolean) => void;
+  // Typography Props
   readingFontFamily: string;
   setReadingFontFamily: (font: string) => void;
   readingFontSize: FontSizeKey;
@@ -28,25 +19,26 @@ interface SystemMenuProps {
   setReadingLineHeight: (height: LineHeightKey) => void;
   numberFontFamily: string;
   setNumberFontFamily: (font: string) => void;
+  // UI & Water Visuals Props
   uiStyle: 'serene' | 'dynamic';
   setUiStyle: (style: 'serene' | 'dynamic') => void;
+  activeTheme: WaterTheme;
+  timeMode: 'auto' | WaterTheme;
+  setTimeMode: (mode: 'auto' | WaterTheme) => void;
+  bgEnabled: boolean;
+  setBgEnabled: (enabled: boolean) => void;
+  particlesEnabled: boolean;
+  setParticlesEnabled: (enabled: boolean) => void;
+  motionEffectsEnabled: boolean;
+  setMotionEffectsEnabled: (enabled: boolean) => void;
+  deepTransitionsEnabled: boolean;
+  setDeepTransitionsEnabled: (enabled: boolean) => void;
   onOpenReadingGuide?: () => void;
 }
 
 export default function SystemMenu({
   isOpen,
   onClose,
-  timeMode,
-  setTimeMode,
-  activeTheme,
-  bgEnabled,
-  setBgEnabled,
-  particlesEnabled,
-  setParticlesEnabled,
-  motionEffectsEnabled,
-  setMotionEffectsEnabled,
-  deepTransitionsEnabled,
-  setDeepTransitionsEnabled,
   readingFontFamily,
   setReadingFontFamily,
   readingFontSize,
@@ -57,86 +49,115 @@ export default function SystemMenu({
   setNumberFontFamily,
   uiStyle,
   setUiStyle,
+  activeTheme,
+  timeMode,
+  setTimeMode,
+  bgEnabled,
+  setBgEnabled,
+  particlesEnabled,
+  setParticlesEnabled,
+  motionEffectsEnabled,
+  setMotionEffectsEnabled,
+  deepTransitionsEnabled,
+  setDeepTransitionsEnabled,
   onOpenReadingGuide,
 }: SystemMenuProps) {
   const [screen, setScreen] = useState<'main' | 'typography' | 'visual' | 'offline'>('main');
-  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [offlineStatus, setOfflineStatus] = useState<{ isCached: boolean; meta: any }>({ isCached: false, meta: null });
-  const [canInstall, setCanInstall] = useState<boolean>(false);
+  
+  // Offline State
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+  const [offlineStatus, setOfflineStatus] = useState<{ isCached: boolean; count: number }>({ isCached: false, count: 0 });
+  const [canInstall, setCanInstall] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check initial offline cache status
-    getOfflineStatus().then(setOfflineStatus).catch(() => {});
+    if (isOpen) {
+      setScreen('main');
+      checkOfflineState();
+    }
+  }, [isOpen]);
 
-    // Listen to network status
-    const onOnline = () => setIsOnline(true);
-    const onOffline = () => setIsOnline(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    // Subscribe to PWA install prompt
-    const unsubscribeInstall = subscribeToInstallPrompt(setCanInstall);
+    const unsub = subscribeToInstallPrompt((available) => {
+      setCanInstall(available);
+    });
 
     return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
-      unsubscribeInstall();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      unsub();
     };
   }, []);
+
+  const checkOfflineState = async () => {
+    try {
+      const status = await getOfflineStatus();
+      setOfflineStatus({
+        isCached: status.isCached,
+        count: status.meta?.totalBooks || 0,
+      });
+    } catch {
+      // Ignore
+    }
+  };
 
   const handleSyncOfflineBible = async () => {
     setIsSyncing(true);
     setSyncFeedback(null);
     try {
-      const res = await fetch('/api/bible');
-      if (!res.ok) throw new Error('No se pudo descargar de la red');
-      const data = await res.json();
-      await saveBibleToIndexedDB(data);
-      const status = await getOfflineStatus();
-      setOfflineStatus(status);
-      setSyncFeedback('¡Biblia completa guardada en el dispositivo para usar sin internet!');
+      const data = await getBibleData();
+      if (data && data.length > 0) {
+        setSyncFeedback(`¡Éxito! ${data.length} libros guardados localmente.`);
+        await checkOfflineState();
+      } else {
+        setSyncFeedback('No se pudo sincronizar la Biblia.');
+      }
     } catch (e: any) {
-      setSyncFeedback('No se pudo conectar a la red para actualizar. Si estás offline, tu copia guardada sigue funcionando.');
+      setSyncFeedback(`Error: ${e.message || 'Falló la descarga'}`);
     } finally {
       setIsSyncing(false);
-      setTimeout(() => setSyncFeedback(null), 5000);
     }
   };
 
   const handleInstallApp = async () => {
-    const res = await promptPWAInstall();
-    if (res === 'accepted') {
-      setSyncFeedback('¡Instalación completada!');
+    const outcome = await promptPWAInstall();
+    if (outcome === 'accepted') {
+      setCanInstall(false);
     }
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      const timer = setTimeout(() => setScreen('main'), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
+  // Persona 3 Reload Button component
   const MenuButton = ({ text, onClick, offset, hoverPolygon }: { text: string, onClick: () => void, offset: string, hoverPolygon: string }) => (
     <motion.button
-      initial={{ x: 50, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: -50, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      type="button"
       onClick={onClick}
-      className={`group relative transition-colors duration-200 ${offset} ${uiStyle === 'dynamic' ? 'text-[#81e6e6] hover:text-[#e52b22] font-black italic uppercase text-4xl sm:text-5xl md:text-7xl tracking-tighter' : 'text-white/80 hover:text-white font-light text-3xl sm:text-4xl md:text-5xl tracking-widest'}`}
+      className={`relative group w-auto min-w-[240px] sm:min-w-[280px] text-right py-2 px-6 focus:outline-none transition-all ${offset}`}
+      whileHover={uiStyle === 'dynamic' ? { scale: 1.05, x: -10 } : { scale: 1.02 }}
+      whileTap={{ scale: 0.95 }}
     >
-      <span className={`relative z-10 ${uiStyle === 'dynamic' ? 'drop-shadow-[3px_4px_0_rgba(0,0,40,0.6)]' : 'drop-shadow-lg'}`}>{text}</span>
       {/* Polígono de fondo al hacer hover estilo Persona, o fondo redondeado para sereno */}
+      <span 
+        className={`absolute inset-0 transition-opacity duration-150 ${
+          uiStyle === 'dynamic' 
+            ? 'bg-[#81e6e6] opacity-0 group-hover:opacity-100 shadow-[0_0_20px_rgba(129,230,230,0.8)]' 
+            : 'bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 backdrop-blur-md'
+        }`}
+        style={uiStyle === 'dynamic' ? { clipPath: hoverPolygon } : {}}
+      />
       {uiStyle === 'dynamic' ? (
-        <div
-          className="absolute inset-y-[-10%] inset-x-[-10%] bg-[#e0e0e0] opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10 shadow-[8px_8px_0_rgba(0,0,0,0.2)]"
-          style={{ clipPath: hoverPolygon }}
-        />
+        <span className="relative z-10 block text-3xl sm:text-5xl font-black italic tracking-tighter text-[#1a1a1a] group-hover:text-black uppercase drop-shadow-[2px_2px_0px_rgba(255,255,255,0.8)]">
+          {text}
+        </span>
       ) : (
-        <div className="absolute inset-y-[-20%] inset-x-[-15%] bg-white/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 backdrop-blur-md border border-white/20" />
+        <span className="relative z-10 block text-2xl sm:text-3xl font-light tracking-widest text-white/90 group-hover:text-white uppercase">
+          {text}
+        </span>
       )}
     </motion.button>
   );
@@ -160,11 +181,11 @@ export default function SystemMenu({
             onClick={onClose} 
             className={`absolute top-6 right-6 md:top-8 md:right-8 z-[250] flex items-center justify-center transition-all ${
               uiStyle === 'dynamic' 
-                ? 'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-[4px] border-[#81e6e6] skew-x-[-15deg] shadow-[6px_6px_0_rgba(0,0,0,0.8)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.8)]' 
+                ? 'w-12 h-12 md:w-14 md:h-14 bg-[#111] hover:bg-[#ff0066] text-white border-2 md:border-4 border-white transform -skew-x-12 shadow-[4px_4px_0_rgba(0,0,0,0.3)] active:translate-y-1 active:shadow-[2px_2px_0_rgba(0,0,0,0.3)]' 
                 : 'w-12 h-12 md:w-14 md:h-14 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full border border-white/20 hover:border-white/50 text-white shadow-lg'
             }`}
           >
-            <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black' : ''} />
+            <X size={28} className={uiStyle === 'dynamic' ? 'skew-x-[12deg]' : ''} />
           </motion.button>
           {/* Base opaque background to block main App UI + isolated WaterBackground */}
           <div className="absolute inset-0 opacity-80">
@@ -234,7 +255,7 @@ export default function SystemMenu({
           )}
 
           {/* Capa 4: Contenido interactivo */}
-          <div className="relative z-20 w-full h-full">
+          <div className="relative z-20 w-full h-full overflow-hidden">
 
             <AnimatePresence mode="wait">
               {/* MENÚ PRINCIPAL */}
@@ -287,7 +308,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   {/* Des-sesgar el contenido interno si es dinámico */}
                   <div className="flex flex-col h-full relative z-10">
@@ -296,14 +317,17 @@ export default function SystemMenu({
                         <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-[#81e6e6] drop-shadow-md uppercase">Tipografía</h2>
                         <button 
                           onClick={() => setScreen('main')} 
-                          className="bg-[#e52b22] text-white px-6 py-3 md:px-8 md:py-4 md:text-lg font-black italic uppercase  hover:bg-[#e0e0e0] hover:text-[#e52b22] transition-colors shadow-lg"
+                          className="bg-[#e52b22] text-white px-6 py-3 md:px-8 md:py-4 md:text-lg font-black italic uppercase hover:bg-[#e0e0e0] hover:text-[#e52b22] transition-colors shadow-lg"
                         >
                           <span className="block skew-x-[15deg]">Volver</span>
                         </button>
                       </div>
                     )}
 
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain pb-4 pr-1 custom-scrollbar"
+                      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+                    >
                       <TypographyControl
                         layout="grid"
                         uiStyle={uiStyle}
@@ -341,165 +365,180 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {uiStyle === 'dynamic' && (
-                      <div className="mb-6 border-b-2 border-white/20 pb-4 shrink-0 mt-4 md:mt-0">
+                      <div className="mb-6 border-b-2 border-white/20 pb-4 shrink-0 mt-4 md:mt-0 flex items-center justify-between">
                         <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter text-[#81e6e6] drop-shadow-md uppercase">Efectos</h2>
+                        <button 
+                          onClick={() => setScreen('main')} 
+                          className="bg-[#e52b22] text-white px-6 py-3 md:px-8 md:py-4 md:text-lg font-black italic uppercase hover:bg-[#e0e0e0] hover:text-[#e52b22] transition-colors shadow-lg"
+                        >
+                          <span className="block skew-x-[15deg]">Volver</span>
+                        </button>
                       </div>
                     )}
 
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                      <div className="space-y-6">
-                        <div className="space-y-3">
-                          <div className={`text-sm uppercase tracking-widest inline-block px-3 py-1 mb-2 ${uiStyle === 'dynamic' ? 'font-black italic text-black bg-[#81e6e6]' : 'font-medium text-white/50'}`}>
-    <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Personalidad Visual</span>
-  </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setUiStyle('serene')}
-                              className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
-                              } ${
-                                uiStyle === 'serene' 
-                                  ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-                                  : (uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[#333] hover:border-[#81e6e6] text-white/70 hover:text-white shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
-                              }`}
-                            >
-                              <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
-                                <Sparkles size={24} className={uiStyle === 'serene' ? 'text-white' : 'text-white/50 group-hover:text-white transition-colors'} />
-                                <span className="font-light tracking-widest uppercase text-base">Sereno</span>
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setUiStyle('dynamic')}
-                              className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
-                              } ${
-                                uiStyle === 'dynamic' 
-                                  ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-[#81e6e6] shadow-[4px_4px_0_rgba(129,230,230,0.4)]' 
-                                  : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
-                              }`}
-                            >
-                              <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
-                                <Palette size={24} className={uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white/50 group-hover:text-white transition-colors'} />
-                                <span className="font-black italic tracking-tighter uppercase text-base">Dinámico</span>
-                              </div>
-                            </button>
+                    <div 
+                      className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain pb-4 pr-1 custom-scrollbar"
+                      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+                    >
+                      <div className="w-full pb-4 overflow-x-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full">
+                          {/* Columna 1: Personalidad Visual & Elementos */}
+                          <div className="w-full space-y-6">
+                          <div className="space-y-3">
+                            <div className={`text-sm uppercase tracking-widest inline-block px-3 py-1 mb-2 ${uiStyle === 'dynamic' ? 'font-black italic text-black bg-[#81e6e6]' : 'font-medium text-white/50'}`}>
+                              <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Personalidad Visual</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setUiStyle('serene')}
+                                className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
+                                  uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
+                                } ${
+                                  uiStyle === 'serene' 
+                                    ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                                    : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                                }`}
+                              >
+                                <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
+                                  <Sparkles size={24} className={uiStyle === 'serene' ? 'text-white' : 'text-white/50 group-hover:text-white transition-colors'} />
+                                  <span className="font-light tracking-widest uppercase text-base">Sereno</span>
+                                </div>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setUiStyle('dynamic')}
+                                className={`flex flex-col items-center justify-center p-5 md:p-6 text-base transition-all group ${
+                                  uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
+                                } ${
+                                  uiStyle === 'dynamic' 
+                                    ? 'bg-[#81e6e6]/25 border-[#81e6e6] text-[#81e6e6] shadow-[0_0_15px_rgba(129,230,230,0.3)]' 
+                                    : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30'
+                                }`}
+                              >
+                                <div className={`flex flex-col items-center gap-2 ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
+                                  <Palette size={24} className={uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white/50 group-hover:text-white transition-colors'} />
+                                  <span className="font-black italic tracking-tighter uppercase text-base">Dinámico</span>
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className={`space-y-3 ${uiStyle === 'dynamic' ? 'pt-4 border-t-2 border-white/10' : ''}`}>
+                            <div className={`text-sm uppercase tracking-widest inline-block px-3 py-1 mb-2 ${uiStyle === 'dynamic' ? 'font-black italic text-black bg-[#81e6e6]' : 'font-medium text-white/50'}`}>
+                              <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Elementos</span>
+                            </div>
+                            <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
+                              uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                            }`}>
+                              <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Agua Animada</span>
+                              {uiStyle === 'dynamic' ? (
+                                <div onClick={(e) => { e.preventDefault(); setBgEnabled(!bgEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
+                                  <span className={`font-black italic text-base md:text-lg ${bgEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{bgEnabled ? 'ON' : 'OFF'}</span>
+                                </div>
+                              ) : (
+                                <input 
+                                  type="checkbox" 
+                                  checked={bgEnabled} 
+                                  onChange={() => setBgEnabled(!bgEnabled)}
+                                  className="accent-[#e52b22] w-5 h-5 cursor-pointer"
+                                />
+                              )}
+                            </label>
+                            <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
+                              uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                            }`}>
+                              <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Partículas</span>
+                              {uiStyle === 'dynamic' ? (
+                                <div onClick={(e) => { e.preventDefault(); setParticlesEnabled(!particlesEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
+                                  <span className={`font-black italic text-base md:text-lg ${particlesEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{particlesEnabled ? 'ON' : 'OFF'}</span>
+                                </div>
+                              ) : (
+                                <input 
+                                  type="checkbox" 
+                                  checked={particlesEnabled} 
+                                  onChange={() => setParticlesEnabled(!particlesEnabled)}
+                                  className="accent-[#e52b22] w-5 h-5 cursor-pointer"
+                                />
+                              )}
+                            </label>
+                            <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
+                              uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                            }`}>
+                              <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Movimiento Acuático</span>
+                              {uiStyle === 'dynamic' ? (
+                                <div onClick={(e) => { e.preventDefault(); setMotionEffectsEnabled(!motionEffectsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
+                                  <span className={`font-black italic text-base md:text-lg ${motionEffectsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{motionEffectsEnabled ? 'ON' : 'OFF'}</span>
+                                </div>
+                              ) : (
+                                <input 
+                                  type="checkbox" 
+                                  checked={motionEffectsEnabled} 
+                                  onChange={() => setMotionEffectsEnabled(!motionEffectsEnabled)}
+                                  className="accent-[#e52b22] w-5 h-5 cursor-pointer"
+                                />
+                              )}
+                            </label>
+                            <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
+                              uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
+                            }`}>
+                              <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Transiciones Profundas</span>
+                              {uiStyle === 'dynamic' ? (
+                                <div onClick={(e) => { e.preventDefault(); setDeepTransitionsEnabled(!deepTransitionsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
+                                  <span className={`font-black italic text-base md:text-lg ${deepTransitionsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{deepTransitionsEnabled ? 'ON' : 'OFF'}</span>
+                                </div>
+                              ) : (
+                                <input 
+                                  type="checkbox" 
+                                  checked={deepTransitionsEnabled} 
+                                  onChange={() => setDeepTransitionsEnabled(!deepTransitionsEnabled)}
+                                  className="accent-[#e52b22] w-5 h-5 cursor-pointer"
+                                />
+                              )}
+                            </label>
                           </div>
                         </div>
 
-                        <div className={`space-y-3 ${uiStyle === 'dynamic' ? 'pt-4 border-t-2 border-white/10' : ''}`}>
+                        {/* Columna 2: Tono del Fondo */}
+                        <div className="w-full space-y-3">
                           <div className={`text-sm uppercase tracking-widest inline-block px-3 py-1 mb-2 ${uiStyle === 'dynamic' ? 'font-black italic text-black bg-[#81e6e6]' : 'font-medium text-white/50'}`}>
-    <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Elementos</span>
-  </div>
-                          <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
-                            uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                          }`}>
-                            <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Agua Animada</span>
-                            {uiStyle === 'dynamic' ? (
-                              <div onClick={(e) => { e.preventDefault(); setBgEnabled(!bgEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${bgEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{bgEnabled ? 'ON' : 'OFF'}</span>
-                              </div>
-                            ) : (
-                              <input 
-                                type="checkbox" 
-                                checked={bgEnabled} 
-                                onChange={() => setBgEnabled(!bgEnabled)}
-                                className="accent-[#e52b22] w-5 h-5 cursor-pointer"
-                              />
-                            )}
-                          </label>
-                          <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
-                            uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                          }`}>
-                            <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Partículas</span>
-                            {uiStyle === 'dynamic' ? (
-                              <div onClick={(e) => { e.preventDefault(); setParticlesEnabled(!particlesEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${particlesEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{particlesEnabled ? 'ON' : 'OFF'}</span>
-                              </div>
-                            ) : (
-                              <input 
-                                type="checkbox" 
-                                checked={particlesEnabled} 
-                                onChange={() => setParticlesEnabled(!particlesEnabled)}
-                                className="accent-[#e52b22] w-5 h-5 cursor-pointer"
-                              />
-                            )}
-                          </label>
-                          <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
-                            uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                          }`}>
-                            <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Movimiento Acuático</span>
-                            {uiStyle === 'dynamic' ? (
-                              <div onClick={(e) => { e.preventDefault(); setMotionEffectsEnabled(!motionEffectsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${motionEffectsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{motionEffectsEnabled ? 'ON' : 'OFF'}</span>
-                              </div>
-                            ) : (
-                              <input 
-                                type="checkbox" 
-                                checked={motionEffectsEnabled} 
-                                onChange={() => setMotionEffectsEnabled(!motionEffectsEnabled)}
-                                className="accent-[#e52b22] w-5 h-5 cursor-pointer"
-                              />
-                            )}
-                          </label>
-                          <label className={`flex items-center justify-between px-5 py-4 md:px-8 md:py-5 cursor-pointer transition-colors group ${
-                            uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[3px] border-[#333] hover:border-[#81e6e6] text-white/90 shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border border-white/10 hover:border-white/30 rounded-xl text-white/90'
-                          }`}>
-                            <span className={uiStyle === 'dynamic' ? 'skew-x-[15deg] font-black italic uppercase tracking-wide text-base md:text-lg' : 'font-light tracking-widest uppercase'}>Transiciones Profundas</span>
-                            {uiStyle === 'dynamic' ? (
-                              <div onClick={(e) => { e.preventDefault(); setDeepTransitionsEnabled(!deepTransitionsEnabled); }} className="flex items-center justify-center skew-x-[15deg] border-2 border-[#555] bg-black w-16 md:w-20 h-10 md:h-12 transition-colors group-hover:border-[#81e6e6]">
-                                <span className={`font-black italic text-base md:text-lg pr-1 ${deepTransitionsEnabled ? 'text-[#81e6e6]' : 'text-white/30'}`}>{deepTransitionsEnabled ? 'ON' : 'OFF'}</span>
-                              </div>
-                            ) : (
-                              <input 
-                                type="checkbox" 
-                                checked={deepTransitionsEnabled} 
-                                onChange={() => setDeepTransitionsEnabled(!deepTransitionsEnabled)}
-                                className="accent-[#e52b22] w-5 h-5 cursor-pointer"
-                              />
-                            )}
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className={`text-sm uppercase tracking-widest inline-block px-3 py-1 mb-2 ${uiStyle === 'dynamic' ? 'font-black italic text-black bg-[#81e6e6]' : 'font-medium text-white/50'}`}>
-    <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Tono del Fondo</span>
-  </div>
-                        <div className="grid grid-cols-1 gap-2">
-                          {[
-                            { id: 'auto', label: 'Hora Local', icon: Sparkles },
-                            { id: 'dawn', label: 'Amanecer', icon: Sunrise },
-                            { id: 'day', label: 'Día', icon: Sun },
-                            { id: 'sunset', label: 'Atardecer', icon: Sunset },
-                            { id: 'night', label: 'Noche', icon: Moon },
-                          ].map((mode) => (
-                            <button
-                              key={mode.id}
-                              type="button"
-                              onClick={() => setTimeMode(mode.id as 'auto' | WaterTheme)}
-                              className={`flex items-center space-x-3 w-full px-5 py-4 md:px-6 md:py-5 text-base md:text-lg transition-all group ${
-                                uiStyle === 'dynamic' ? 'border-[3px]' : 'border rounded-xl'
-                              } ${
-                                timeMode === mode.id 
-                                  ? (uiStyle === 'dynamic' ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-white shadow-[4px_4px_0_rgba(129,230,230,0.4)]' : 'bg-white/15 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]')
-                                  : (uiStyle === 'dynamic' ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border-[#333] hover:border-[#81e6e6] text-white/70 hover:text-white shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
-                              }`}
-                            >
-                              <div className={`flex items-center space-x-3 w-full ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
-                                <mode.icon size={20} className={timeMode === mode.id ? (uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white') : (uiStyle === 'dynamic' ? 'text-white/50 group-hover:text-[#81e6e6] transition-colors' : 'text-white/50 group-hover:text-white transition-colors')} />
-                                <span className={uiStyle === 'dynamic' ? 'font-black italic tracking-wider uppercase text-base' : 'font-light tracking-widest uppercase text-base'}>{mode.label}</span>
-                              </div>
-                            </button>
-                          ))}
+                            <span className={uiStyle === 'dynamic' ? 'block skew-x-[15deg]' : ''}>Tono del Fondo</span>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {[
+                              { id: 'auto', label: 'Hora Local', icon: Sparkles },
+                              { id: 'dawn', label: 'Amanecer', icon: Sunrise },
+                              { id: 'day', label: 'Día', icon: Sun },
+                              { id: 'sunset', label: 'Atardecer', icon: Sunset },
+                              { id: 'night', label: 'Noche', icon: Moon },
+                            ].map((mode) => (
+                              <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => setTimeMode(mode.id as 'auto' | WaterTheme)}
+                                className={`flex items-center space-x-3 w-full px-5 py-4 md:px-6 md:py-5 text-base md:text-lg transition-all group ${
+                                  uiStyle === 'dynamic' ? 'border-2' : 'border rounded-xl'
+                                } ${
+                                  timeMode === mode.id 
+                                    ? (uiStyle === 'dynamic' ? 'bg-[#81e6e6]/20 border-[#81e6e6] text-white shadow-[0_0_15px_rgba(129,230,230,0.3)]' : 'bg-white/15 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]')
+                                    : (uiStyle === 'dynamic' ? 'bg-black/40 hover:bg-black/80 border-transparent text-white/70 hover:text-white hover:border-[#81e6e6]/50' : 'bg-black/20 hover:bg-black/40 border-white/10 text-white/70 hover:text-white hover:border-white/30')
+                                }`}
+                              >
+                                <div className={`flex items-center space-x-3 w-full ${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''}`}>
+                                  <mode.icon size={20} className={timeMode === mode.id ? (uiStyle === 'dynamic' ? 'text-[#81e6e6]' : 'text-white') : (uiStyle === 'dynamic' ? 'text-white/50 group-hover:text-[#81e6e6] transition-colors' : 'text-white/50 group-hover:text-white transition-colors')} />
+                                  <span className={uiStyle === 'dynamic' ? 'font-black italic tracking-wider uppercase text-base' : 'font-light tracking-widest uppercase text-base'}>{mode.label}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
                     {uiStyle === 'dynamic' && (
                       <div className="mt-6 pt-2 shrink-0 flex justify-end">
                         <button 
@@ -522,7 +561,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   exit={{ opacity: 0, x: 100, skewX: uiStyle === 'dynamic' ? -15 : 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[90vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-[4px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
+                  className={`absolute flex flex-col ${uiStyle === 'dynamic' ? 'top-1/2 -translate-y-1/2 right-[2%] w-[95vw] md:w-[600px] lg:w-[750px] max-h-[95vh] p-8 md:p-12 bg-[#111] border-l-[12px] border-[#81e6e6] shadow-[15px_15px_0_rgba(0,0,0,0.7)]' : 'top-[110px] md:top-[130px] left-6 right-6 md:left-12 md:right-12 bottom-6 md:bottom-12'}`}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {uiStyle === 'dynamic' && (
@@ -530,17 +569,20 @@ export default function SystemMenu({
                         <h2 className="text-2xl sm:text-4xl md:text-5xl font-black italic tracking-tighter text-[#81e6e6] drop-shadow-md uppercase">Sin Internet (Offline)</h2>
                         <button 
                           onClick={() => setScreen('main')} 
-                          className="bg-[#e52b22] text-white px-6 py-3 md:px-8 md:py-4 md:text-lg font-black italic uppercase  hover:bg-[#e0e0e0] hover:text-[#e52b22] transition-colors shadow-lg shrink-0 text-sm"
+                          className="bg-[#e52b22] text-white px-6 py-3 md:px-8 md:py-4 md:text-lg font-black italic uppercase hover:bg-[#e0e0e0] hover:text-[#e52b22] transition-colors shadow-lg shrink-0 text-sm"
                         >
                           <span className="block skew-x-[15deg]">Volver</span>
                         </button>
                       </div>
                     )}
 
-                    <div className="flex-1 space-y-4">
+                    <div 
+                      className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain pb-4 pr-1 custom-scrollbar space-y-4"
+                      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+                    >
                       {/* Estado de conectividad actual */}
                       <div className={`p-4 transition-all ${
-                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333]  shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border'
+                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333] shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border'
                       } ${
                         isOnline 
                           ? (uiStyle === 'dynamic' ? 'border-emerald-400/80 bg-emerald-950/40 text-emerald-200' : 'border-emerald-500/40 bg-emerald-950/30 text-emerald-200')
@@ -567,7 +609,7 @@ export default function SystemMenu({
 
                       {/* Tarjeta de Almacenamiento Local de la Biblia */}
                       <div className={`p-4 transition-all ${
-                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333]  shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border border-white/15 bg-black/20'
+                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333] shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border border-white/15 bg-black/20'
                       }`}>
                         <div className={`${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''} space-y-3`}>
                           <div className="flex items-center justify-between">
@@ -610,7 +652,7 @@ export default function SystemMenu({
 
                       {/* Tarjeta de Aplicación Android (PWA) */}
                       <div className={`p-4 transition-all ${
-                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333]  shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border border-white/15 bg-black/20'
+                        uiStyle === 'dynamic' ? 'bg-[#1a1a1a] border-[3px] border-[#333] shadow-[4px_4px_0_rgba(0,0,0,0.8)]' : 'rounded-xl border border-white/15 bg-black/20'
                       }`}>
                         <div className={`${uiStyle === 'dynamic' ? 'skew-x-[15deg]' : ''} space-y-3`}>
                           <div className="flex items-center gap-3">

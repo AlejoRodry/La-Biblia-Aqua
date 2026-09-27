@@ -547,7 +547,10 @@ export default function BibleResults({
                 </div>
 
                 {/* Book Pill Filter */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                <div 
+                  className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar"
+                  style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
                   <span className="text-xs text-white/60 shrink-0 mr-1">Libro:</span>
                   <button
                     onClick={() => setSelectedBookFilter('all')}

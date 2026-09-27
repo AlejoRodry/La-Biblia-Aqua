@@ -39,7 +39,10 @@ async function startServer() {
     }
     
     try {
-      const response = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr.json');
+      let response = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr1960.json');
+      if (!response.ok) {
+        response = await fetch('https://raw.githubusercontent.com/thiagobodruk/bible/master/json/es_rvr.json');
+      }
       if (!response.ok) {
         throw new Error(`GitHub responded with status: ${response.status}`);
       }

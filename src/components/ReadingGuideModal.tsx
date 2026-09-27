@@ -158,26 +158,29 @@ export default function ReadingGuideModal({
           </div>
 
           {/* Main Modal Container with smooth scroll mask */}
-          <div className="relative z-20 w-full h-full pt-28 md:pt-32 pb-8 px-4 sm:px-6 md:px-12 flex justify-center items-stretch">
-            <div className="w-full max-w-5xl h-full overflow-y-auto custom-scrollbar pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)] -my-4 py-6">
+          <div className="relative z-20 w-full h-full pt-28 md:pt-32 pb-8 px-3 sm:px-6 md:px-12 flex justify-center items-stretch overflow-hidden">
+            <div 
+              className="w-full max-w-5xl h-full overflow-y-auto overflow-x-hidden overscroll-contain custom-scrollbar pr-1 sm:pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)] -my-4 py-6"
+              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+            >
               
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12 w-full max-w-full">
                 
                 {/* LEFT COLUMN: Resume Card & Daily Streak (7 cols) */}
-                <div className="lg:col-span-7 space-y-6">
+                <div className="lg:col-span-7 space-y-6 min-w-0">
                   
                   {/* 1. CONTINUAR LECTURA HERO CARD */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className={`relative overflow-hidden p-6 transition-all ${
+                    className={`relative overflow-hidden p-4 sm:p-6 transition-all ${
                       uiStyle === 'dynamic'
-                        ? 'bg-[#0f172a]/95 border-4 border-[#ffea29] shadow-[8px_8px_0_rgba(0,0,0,0.6)] transform -skew-x-2'
+                        ? 'bg-[#0f172a]/95 border-4 border-[#ffea29] shadow-[8px_8px_0_rgba(0,0,0,0.6)] sm:transform sm:-skew-x-2'
                         : 'bg-black/30 backdrop-blur-xl border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                     }`}
                   >
-                    <div className={uiStyle === 'dynamic' ? 'transform skew-x-2' : ''}>
+                    <div className={uiStyle === 'dynamic' ? 'sm:transform sm:skew-x-2' : ''}>
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <span className={`text-xs uppercase tracking-widest flex items-center gap-1.5 ${
                           uiStyle === 'dynamic' ? 'font-black text-[#ffea29]' : 'text-cyan-300 font-semibold'
@@ -262,28 +265,28 @@ export default function ReadingGuideModal({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className={`p-6 transition-all ${
+                    className={`p-4 sm:p-6 transition-all overflow-hidden ${
                       uiStyle === 'dynamic'
-                        ? 'bg-[#0f172a]/95 border-4 border-[#81e6e6] shadow-[8px_8px_0_rgba(0,0,0,0.6)] transform -skew-x-2'
+                        ? 'bg-[#0f172a]/95 border-4 border-[#81e6e6] shadow-[8px_8px_0_rgba(0,0,0,0.6)] sm:transform sm:-skew-x-2'
                         : 'bg-black/30 backdrop-blur-xl border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                     }`}
                   >
-                    <div className={uiStyle === 'dynamic' ? 'transform skew-x-2' : ''}>
+                    <div className={uiStyle === 'dynamic' ? 'sm:transform sm:skew-x-2' : ''}>
                       {/* Streak Header Metrics */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
                         
                         {/* Current Streak */}
-                        <div className={`p-4 transition-all ${
+                        <div className={`p-3 sm:p-4 transition-all min-w-0 ${
                           uiStyle === 'dynamic'
                             ? 'bg-black/60 border-2 border-[#ff0066]/50'
                             : 'bg-white/5 border border-white/10 rounded-2xl'
                         }`}>
                           <div className="flex items-center gap-2 text-amber-400 mb-1">
-                            <Flame size={20} className="fill-amber-400 animate-pulse" />
-                            <span className="text-xs uppercase tracking-wider font-semibold">Racha Actual</span>
+                            <Flame size={20} className="fill-amber-400 animate-pulse shrink-0" />
+                            <span className="text-xs uppercase tracking-wider font-semibold truncate">Racha Actual</span>
                           </div>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={`text-3xl sm:text-4xl text-white ${
+                            <span className={`text-2xl sm:text-4xl text-white ${
                               uiStyle === 'dynamic' ? 'font-black italic' : 'font-light'
                             }`}>
                               {progressData.currentStreak}
@@ -295,17 +298,17 @@ export default function ReadingGuideModal({
                         </div>
 
                         {/* Best Streak */}
-                        <div className={`p-4 transition-all ${
+                        <div className={`p-3 sm:p-4 transition-all min-w-0 ${
                           uiStyle === 'dynamic'
                             ? 'bg-black/60 border-2 border-[#ffea29]/50'
                             : 'bg-white/5 border border-white/10 rounded-2xl'
                         }`}>
                           <div className="flex items-center gap-2 text-yellow-300 mb-1">
-                            <Trophy size={18} />
-                            <span className="text-xs uppercase tracking-wider font-semibold">Récord</span>
+                            <Trophy size={18} className="shrink-0" />
+                            <span className="text-xs uppercase tracking-wider font-semibold truncate">Récord</span>
                           </div>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={`text-3xl sm:text-4xl text-white ${
+                            <span className={`text-2xl sm:text-4xl text-white ${
                               uiStyle === 'dynamic' ? 'font-black italic' : 'font-light'
                             }`}>
                               {progressData.bestStreak}
@@ -317,17 +320,17 @@ export default function ReadingGuideModal({
                         </div>
 
                         {/* Today's Goal Status */}
-                        <div className={`col-span-2 sm:col-span-1 p-4 transition-all ${
+                        <div className={`col-span-2 sm:col-span-1 p-3 sm:p-4 transition-all min-w-0 ${
                           isGoalMet
                             ? (uiStyle === 'dynamic' ? 'bg-[#ff0066]/20 border-2 border-[#ff0066]' : 'bg-emerald-500/15 border border-emerald-400/40 rounded-2xl')
                             : (uiStyle === 'dynamic' ? 'bg-black/60 border-2 border-white/20' : 'bg-white/5 border border-white/10 rounded-2xl')
                         }`}>
                           <div className={`flex items-center gap-2 mb-1 ${isGoalMet ? 'text-emerald-300' : 'text-cyan-300'}`}>
-                            <Target size={18} />
-                            <span className="text-xs uppercase tracking-wider font-semibold">Meta de Hoy</span>
+                            <Target size={18} className="shrink-0" />
+                            <span className="text-xs uppercase tracking-wider font-semibold truncate">Meta de Hoy</span>
                           </div>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={`text-3xl sm:text-4xl ${isGoalMet ? 'text-emerald-300 font-bold' : 'text-white font-light'}`}>
+                            <span className={`text-2xl sm:text-4xl ${isGoalMet ? 'text-emerald-300 font-bold' : 'text-white font-light'}`}>
                               {todayCount}
                             </span>
                             <span className="text-xs text-white/60">
@@ -338,17 +341,17 @@ export default function ReadingGuideModal({
                       </div>
 
                       {/* Week Activity Visualizer (Last 7 Days) */}
-                      <div className="mb-6">
+                      <div className="mb-6 w-full">
                         <div className="flex items-center justify-between text-xs text-white/70 uppercase tracking-wider mb-3">
-                          <span className="flex items-center gap-1.5">
-                            <Calendar size={14} className="text-cyan-300" /> Actividad de los últimos 7 días
+                          <span className="flex items-center gap-1.5 truncate">
+                            <Calendar size={14} className="text-cyan-300 shrink-0" /> Actividad de los últimos 7 días
                           </span>
-                          <span className="text-[11px] text-white/50">
-                            {isGoalMet ? '¡Meta diaria alcanzada hoy! 🎉' : 'Lee al menos 1 capítulo hoy'}
+                          <span className="text-[10px] sm:text-[11px] text-white/50 shrink-0 ml-2">
+                            {isGoalMet ? '¡Meta alcanzada! 🎉' : 'Lee al menos 1 cap'}
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-7 gap-2">
+                        <div className="grid grid-cols-7 gap-1 sm:gap-2 w-full max-w-full">
                           {weekDays.map((day) => {
                             const isCompleted = day.count >= progressData.dailyGoal;
                             const hasSomeRead = day.count > 0;
@@ -356,17 +359,17 @@ export default function ReadingGuideModal({
                             return (
                               <div
                                 key={day.dateStr}
-                                className={`flex flex-col items-center p-2.5 transition-all text-center ${
+                                className={`flex flex-col items-center p-1 sm:p-2.5 transition-all text-center min-w-0 ${
                                   day.isToday
                                     ? (uiStyle === 'dynamic' ? 'bg-[#81e6e6]/20 border-2 border-[#81e6e6]' : 'bg-white/15 border border-white/40 rounded-xl')
                                     : (uiStyle === 'dynamic' ? 'bg-black/40 border border-white/10' : 'bg-white/5 border border-white/10 rounded-xl')
                                 }`}
                               >
-                                <span className="text-[11px] text-white/60 uppercase font-medium mb-1">
+                                <span className="text-[9px] sm:text-[11px] text-white/60 uppercase font-medium mb-1 truncate w-full">
                                   {day.dayName}
                                 </span>
                                 
-                                <div className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold my-1 transition-all ${
+                                <div className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-[10px] sm:text-xs font-bold my-0.5 sm:my-1 transition-all shrink-0 ${
                                   isCompleted
                                     ? 'bg-amber-400 text-black shadow-[0_0_10px_rgba(251,191,36,0.6)]'
                                     : hasSomeRead
@@ -374,7 +377,7 @@ export default function ReadingGuideModal({
                                     : 'bg-white/5 text-white/30'
                                 }`}>
                                   {isCompleted ? (
-                                    <Flame size={16} className="fill-black" />
+                                    <Flame size={14} className="fill-black" />
                                   ) : hasSomeRead ? (
                                     day.count
                                   ) : (
@@ -382,7 +385,7 @@ export default function ReadingGuideModal({
                                   )}
                                 </div>
 
-                                <span className="text-[10px] text-white/40">
+                                <span className="text-[8px] sm:text-[10px] text-white/40 truncate w-full">
                                   {day.count} {day.count === 1 ? 'cap' : 'caps'}
                                 </span>
                               </div>
@@ -396,12 +399,12 @@ export default function ReadingGuideModal({
                         <span className="text-xs text-white/70">
                           Ajustar objetivo diario:
                         </span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           {[1, 2, 3, 5].map((g) => (
                             <button
                               key={g}
                               onClick={() => handleGoalChange(g)}
-                              className={`px-3 py-1 text-xs transition-all ${
+                              className={`px-2.5 sm:px-3 py-1 text-xs transition-all whitespace-nowrap ${
                                 progressData.dailyGoal === g
                                   ? (uiStyle === 'dynamic' ? 'bg-[#ffea29] text-black font-black' : 'bg-cyan-400 text-black font-bold rounded-lg shadow-[0_0_10px_rgba(34,211,238,0.5)]')
                                   : (uiStyle === 'dynamic' ? 'bg-black/40 text-white/70 hover:text-white border border-white/20' : 'bg-white/5 hover:bg-white/10 text-white/70 rounded-lg border border-white/10')
@@ -419,20 +422,20 @@ export default function ReadingGuideModal({
                 </div>
 
                 {/* RIGHT COLUMN: Total Bible Progress & Statistics (5 cols) */}
-                <div className="lg:col-span-5 space-y-6">
+                <div className="lg:col-span-5 space-y-6 min-w-0">
                   
                   {/* 3. PROGRESO GLOBAL DE LA BIBLIA */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className={`p-6 transition-all ${
+                    className={`p-4 sm:p-6 transition-all overflow-hidden ${
                       uiStyle === 'dynamic'
-                        ? 'bg-[#0f172a]/95 border-4 border-white/80 shadow-[8px_8px_0_rgba(0,0,0,0.6)] transform -skew-x-2'
+                        ? 'bg-[#0f172a]/95 border-4 border-white/80 shadow-[8px_8px_0_rgba(0,0,0,0.6)] sm:transform sm:-skew-x-2'
                         : 'bg-black/30 backdrop-blur-xl border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                     }`}
                   >
-                    <div className={uiStyle === 'dynamic' ? 'transform skew-x-2' : ''}>
+                    <div className={uiStyle === 'dynamic' ? 'sm:transform sm:skew-x-2' : ''}>
                       <div className="flex items-center justify-between mb-4">
                         <span className={`text-xs uppercase tracking-widest flex items-center gap-1.5 ${
                           uiStyle === 'dynamic' ? 'font-black text-[#81e6e6]' : 'text-cyan-300 font-semibold'
