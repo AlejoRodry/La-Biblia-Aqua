@@ -37,14 +37,86 @@ export function getYesterdayDateString(): string {
   return `${year}-${month}-${day}`;
 }
 
+const PORTUGUESE_TO_SPANISH_BOOKS: Record<string, string> = {
+  "Tiago": "Santiago",
+  "Atos": "Hechos",
+  "Mateus": "Mateo",
+  "João": "Juan",
+  "1 João": "1 Juan",
+  "2 João": "2 Juan",
+  "3 João": "3 Juan",
+  "Juízes": "Jueces",
+  "Rute": "Rut",
+  "1 Reis": "1 Reyes",
+  "2 Reis": "2 Reyes",
+  "1 Crônicas": "1 Crónicas",
+  "2 Crônicas": "2 Crónicas",
+  "Neemias": "Nehemías",
+  "Jó": "Job",
+  "Provérbios": "Proverbios",
+  "Eclesiastes": "Eclesiastés",
+  "Cânticos": "Cantares",
+  "Jeremias": "Jeremías",
+  "Lamentações de Jeremias": "Lamentaciones",
+  "Lamentações": "Lamentaciones",
+  "Oséias": "Oseas",
+  "Obadias": "Abdías",
+  "Jonas": "Jonás",
+  "Miquéias": "Miqueas",
+  "Naum": "Nahúm",
+  "Habacuque": "Habacuc",
+  "Sofonias": "Sofonías",
+  "Ageu": "Hageo",
+  "Zacarias": "Zacarías",
+  "Malaquias": "Malaquías",
+  "1 Coríntios": "1 Corintios",
+  "2 Coríntios": "2 Corintios",
+  "Efésios": "Efesios",
+  "Colossenses": "Colosenses",
+  "1 Tessalonicenses": "1 Tesalonicenses",
+  "2 Tessalonicenses": "2 Tessalonicenses",
+  "1 Timóteo": "1 Timoteo",
+  "2 Timóteo": "2 Timoteo",
+  "Filemom": "Filemón",
+  "Hebreus": "Hebreos",
+  "Apocalipse": "Apocalipsis",
+  "Gênesis": "Génesis",
+  "Êxodo": "Éxodo",
+  "Deuteronômio": "Deuteronomio",
+};
+
+function normalizeChapterKey(key: string): string {
+  for (const [pt, es] of Object.entries(PORTUGUESE_TO_SPANISH_BOOKS)) {
+    if (key.startsWith(`${pt} `)) {
+      return key.replace(`${pt} `, `${es} `);
+    }
+  }
+  return key;
+}
+
 export function loadReadingProgress(): ReadingProgressData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
+      const rawCompleted = data.completedChapters || {};
+      const migratedCompleted: Record<string, boolean> = {};
+
+      for (const [k, v] of Object.entries(rawCompleted)) {
+        migratedCompleted[normalizeChapterKey(k)] = !!v;
+      }
+
+      let lastRead = data.lastRead || null;
+      if (lastRead && lastRead.bookName && PORTUGUESE_TO_SPANISH_BOOKS[lastRead.bookName]) {
+        lastRead = {
+          ...lastRead,
+          bookName: PORTUGUESE_TO_SPANISH_BOOKS[lastRead.bookName]
+        };
+      }
+
       return {
-        completedChapters: data.completedChapters || {},
-        lastRead: data.lastRead || null,
+        completedChapters: migratedCompleted,
+        lastRead,
         dailyGoal: data.dailyGoal || 1,
         dailyHistory: data.dailyHistory || {},
         currentStreak: data.currentStreak || 0,

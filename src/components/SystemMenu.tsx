@@ -137,8 +137,12 @@ export default function SystemMenu({
     <motion.button
       type="button"
       onClick={onClick}
-      className={`relative group w-auto min-w-[240px] sm:min-w-[280px] text-right py-2 px-6 focus:outline-none transition-all ${offset}`}
-      whileHover={uiStyle === 'dynamic' ? { scale: 1.05, x: -10 } : { scale: 1.02 }}
+      className={`relative group w-auto min-w-[240px] sm:min-w-[280px] ${
+        uiStyle === 'dynamic' 
+          ? 'text-right justify-end' 
+          : 'text-center justify-center'
+      } flex items-center py-2.5 px-6 focus:outline-none transition-all ${offset}`}
+      whileHover={uiStyle === 'dynamic' ? { scale: 1.05, x: -10 } : { scale: 1.04 }}
       whileTap={{ scale: 0.95 }}
     >
       {/* Polígono de fondo al hacer hover estilo Persona, o fondo redondeado para sereno */}
@@ -155,7 +159,7 @@ export default function SystemMenu({
           {text}
         </span>
       ) : (
-        <span className="relative z-10 block text-2xl sm:text-3xl font-light tracking-widest text-white/90 group-hover:text-white uppercase">
+        <span className="relative z-10 block w-full text-center text-2xl sm:text-3xl font-light tracking-widest text-white/90 group-hover:text-white uppercase">
           {text}
         </span>
       )}
@@ -266,7 +270,7 @@ export default function SystemMenu({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ duration: 0.2 }}
-                  className={`absolute top-1/2 -translate-y-1/2 flex flex-col gap-4 sm:gap-6 ${uiStyle === 'dynamic' ? 'right-0 pr-4 md:pr-12 items-end' : 'left-1/2 -translate-x-1/2 items-center'}`}
+                  className={`absolute top-1/2 -translate-y-1/2 flex flex-col gap-4 sm:gap-6 ${uiStyle === 'dynamic' ? 'right-0 pr-4 md:pr-12 items-end' : 'left-1/2 -translate-x-1/2 items-center text-center'}`}
                 >
                   <MenuButton 
                     text="MI PROGRESO" 

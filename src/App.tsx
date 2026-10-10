@@ -150,7 +150,31 @@ export default function App() {
   const [annotations, setAnnotations] = useState<Record<string, { isBookmarked?: boolean; comment?: string; highlightColor?: string }>>(() => {
     try {
       const stored = localStorage.getItem('bible_annotations');
-      return stored ? JSON.parse(stored) : {};
+      if (!stored) return {};
+      const parsed = JSON.parse(stored);
+      const migrated: Record<string, any> = {};
+      const replacements: Record<string, string> = {
+        'Tiago ': 'Santiago ',
+        'Atos ': 'Hechos ',
+        'Mateus ': 'Mateo ',
+        'João ': 'Juan ',
+        '1 João ': '1 Juan ',
+        '2 João ': '2 Juan ',
+        '3 João ': '3 Juan ',
+        'Juízes ': 'Jueces ',
+        'Apocalipse ': 'Apocalipsis '
+      };
+      for (const [k, v] of Object.entries(parsed)) {
+        let cleanKey = k;
+        for (const [pt, es] of Object.entries(replacements)) {
+          if (cleanKey.startsWith(pt)) {
+            cleanKey = cleanKey.replace(pt, es);
+            break;
+          }
+        }
+        migrated[cleanKey] = v;
+      }
+      return migrated;
     } catch {
       return {};
     }

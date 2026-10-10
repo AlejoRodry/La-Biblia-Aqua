@@ -33,6 +33,19 @@ async function startServer() {
   // In-memory cache for the Bible data
   let bibleDataCache: any = null;
 
+  // 66 Canonical Spanish Reina-Valera 1960 book names in exact order
+  const CANONICAL_SPANISH_BOOKS = [
+    'Génesis', 'Éxodo', 'Levítico', 'Números', 'Deuteronomio', 'Josué', 'Jueces', 'Rut',
+    '1 Samuel', '2 Samuel', '1 Reyes', '2 Reyes', '1 Crónicas', '2 Crónicas', 'Esdras', 'Nehemías',
+    'Ester', 'Job', 'Salmos', 'Proverbios', 'Eclesiastés', 'Cantares', 'Isaías', 'Jeremías',
+    'Lamentaciones', 'Ezequiel', 'Daniel', 'Oseas', 'Joel', 'Amós', 'Abdías', 'Jonás',
+    'Miqueas', 'Nahúm', 'Habacuc', 'Sofonías', 'Hageo', 'Zacarías', 'Malaquías',
+    'Mateo', 'Marcos', 'Lucas', 'Juan', 'Hechos', 'Romanos', '1 Corintios', '2 Corintios',
+    'Gálatas', 'Efesios', 'Filipenses', 'Colosenses', '1 Tesalonicenses', '2 Tesalonicenses',
+    '1 Timoteo', '2 Timoteo', 'Tito', 'Filemón', 'Hebreos', 'Santiago', '1 Pedro', '2 Pedro',
+    '1 Juan', '2 Juan', '3 Juan', 'Judas', 'Apocalipsis'
+  ];
+
   app.get('/api/bible', async (req, res) => {
     if (bibleDataCache) {
       return res.json(bibleDataCache);
@@ -56,8 +69,16 @@ async function startServer() {
                  .replace(/\\(?!["\\/bfnrtu])/g, '\\\\'); // Escape unescaped backslashes
 
       const data = JSON.parse(text);
-      bibleDataCache = data;
-      res.json(data);
+      // Map every book to its canonical Spanish Reina-Valera 1960 name
+      const sanitizedData = Array.isArray(data)
+        ? data.map((book: any, idx: number) => ({
+            ...book,
+            name: CANONICAL_SPANISH_BOOKS[idx] || book.name
+          }))
+        : data;
+
+      bibleDataCache = sanitizedData;
+      res.json(sanitizedData);
     } catch (error) {
       console.error('Error fetching Bible data:', error);
       res.status(500).json({ error: 'Failed to fetch Bible data' });

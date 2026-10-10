@@ -29,7 +29,93 @@ export interface SearchResult {
   bookShortcuts?: MatchingBookShortcut[];
 }
 
+export const CANONICAL_SPANISH_BOOKS: string[] = [
+  // Antiguo Testamento (39 libros)
+  "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut",
+  "1 Samuel", "2 Samuel", "1 Reyes", "2 Reyes", "1 Crónicas", "2 Crónicas", "Esdras", "Nehemías",
+  "Ester", "Job", "Salmos", "Proverbios", "Eclesiastés", "Cantares", "Isaías", "Jeremías",
+  "Lamentaciones", "Ezequiel", "Daniel", "Oseas", "Joel", "Amós", "Abdías", "Jonás",
+  "Miqueas", "Nahúm", "Habacuc", "Sofonías", "Hageo", "Zacarías", "Malaquías",
+  // Nuevo Testamento (27 libros)
+  "Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "1 Corintios", "2 Corintios",
+  "Gálatas", "Efesios", "Filipenses", "Colosenses", "1 Tesalonicenses", "2 Tesalonicenses",
+  "1 Timoteo", "2 Timoteo", "Tito", "Filemón", "Hebreos", "Santiago", "1 Pedro", "2 Pedro",
+  "1 Juan", "2 Juan", "3 Juan", "Judas", "Apocalipsis"
+];
+
 const bookTranslations: Record<string, string> = {
+  // Nombres en portugués (del dataset original thiagobodruk/bible)
+  "Gênesis": "Génesis",
+  "Êxodo": "Éxodo",
+  "Levítico": "Levítico",
+  "Números": "Números",
+  "Deuteronômio": "Deuteronomio",
+  "Josué": "Josué",
+  "Juízes": "Jueces",
+  "Rute": "Rut",
+  "1 Samuel": "1 Samuel",
+  "2 Samuel": "2 Samuel",
+  "1 Reis": "1 Reyes",
+  "2 Reis": "2 Reyes",
+  "1 Crônicas": "1 Crónicas",
+  "2 Crônicas": "2 Crónicas",
+  "Esdras": "Esdras",
+  "Neemias": "Nehemías",
+  "Ester": "Ester",
+  "Jó": "Job",
+  "Salmos": "Salmos",
+  "Provérbios": "Proverbios",
+  "Eclesiastes": "Eclesiastés",
+  "Cânticos": "Cantares",
+  "Cântico dos Cânticos": "Cantares",
+  "Isaías": "Isaías",
+  "Jeremias": "Jeremías",
+  "Lamentações de Jeremias": "Lamentaciones",
+  "Lamentações": "Lamentaciones",
+  "Ezequiel": "Ezequiel",
+  "Daniel": "Daniel",
+  "Oséias": "Oseas",
+  "Joel": "Joel",
+  "Amós": "Amós",
+  "Obadias": "Abdías",
+  "Jonas": "Jonás",
+  "Miquéias": "Miqueas",
+  "Naum": "Nahúm",
+  "Habacuque": "Habacuc",
+  "Sofonias": "Sofonías",
+  "Ageu": "Hageo",
+  "Zacarias": "Zacarías",
+  "Malaquias": "Malaquías",
+  "Mateus": "Mateo",
+  "Marcos": "Marcos",
+  "Lucas": "Lucas",
+  "João": "Juan",
+  "Atos": "Hechos",
+  "Atos dos Apóstolos": "Hechos",
+  "Romanos": "Romanos",
+  "1 Coríntios": "1 Corintios",
+  "2 Coríntios": "2 Corintios",
+  "Gálatas": "Gálatas",
+  "Efésios": "Efesios",
+  "Filipenses": "Filipenses",
+  "Colossenses": "Colosenses",
+  "1 Tessalonicenses": "1 Tesalonicenses",
+  "2 Tessalonicenses": "2 Tesalonicenses",
+  "1 Timóteo": "1 Timoteo",
+  "2 Timóteo": "2 Timoteo",
+  "Tito": "Tito",
+  "Filemom": "Filemón",
+  "Hebreus": "Hebreos",
+  "Tiago": "Santiago",
+  "1 Pedro": "1 Pedro",
+  "2 Pedro": "2 Pedro",
+  "1 João": "1 Juan",
+  "2 João": "2 Juan",
+  "3 João": "3 Juan",
+  "Judas": "Judas",
+  "Apocalipse": "Apocalipsis",
+
+  // Nombres en inglés
   "Genesis": "Génesis",
   "Exodus": "Éxodo",
   "Leviticus": "Levítico",
@@ -38,8 +124,6 @@ const bookTranslations: Record<string, string> = {
   "Joshua": "Josué",
   "Judges": "Jueces",
   "Ruth": "Rut",
-  "1 Samuel": "1 Samuel",
-  "2 Samuel": "2 Samuel",
   "1 Kings": "1 Reyes",
   "2 Kings": "2 Reyes",
   "1 Chronicles": "1 Crónicas",
@@ -47,19 +131,11 @@ const bookTranslations: Record<string, string> = {
   "Ezra": "Esdras",
   "Nehemiah": "Nehemías",
   "Esther": "Ester",
-  "Job": "Job",
-  "Psalms": "Salmos",
-  "Proverbs": "Proverbios",
-  "Ecclesiastes": "Eclesiastés",
   "Song of Solomon": "Cantares",
   "Isaiah": "Isaías",
   "Jeremiah": "Jeremías",
   "Lamentations": "Lamentaciones",
-  "Ezekiel": "Ezequiel",
-  "Daniel": "Daniel",
   "Hosea": "Oseas",
-  "Joel": "Joel",
-  "Amos": "Amós",
   "Obadiah": "Abdías",
   "Jonah": "Jonás",
   "Micah": "Miqueas",
@@ -74,7 +150,6 @@ const bookTranslations: Record<string, string> = {
   "Luke": "Lucas",
   "John": "Juan",
   "Acts": "Hechos",
-  "Romans": "Romanos",
   "1 Corinthians": "1 Corintios",
   "2 Corinthians": "2 Corintios",
   "Galatians": "Gálatas",
@@ -85,7 +160,6 @@ const bookTranslations: Record<string, string> = {
   "2 Thessalonians": "2 Tesalonicenses",
   "1 Timothy": "1 Timoteo",
   "2 Timothy": "2 Timoteo",
-  "Titus": "Tito",
   "Philemon": "Filemón",
   "Hebrews": "Hebreos",
   "James": "Santiago",
@@ -94,7 +168,6 @@ const bookTranslations: Record<string, string> = {
   "1 John": "1 Juan",
   "2 John": "2 Juan",
   "3 John": "3 Juan",
-  "Jude": "Judas",
   "Revelation": "Apocalipsis"
 };
 
@@ -159,10 +232,15 @@ export async function getBibleData() {
     throw new Error('No se pudo cargar la Biblia. Si no tienes conexión a internet, abre la app al menos una vez con conexión para guardarla en tu dispositivo.');
   }
 
-  bibleData = rawData.map((book: any) => ({
+  bibleData = rawData.map((book: any, idx: number) => ({
     ...book,
-    name: bookTranslations[book.name] || book.name
+    name: CANONICAL_SPANISH_BOOKS[idx] || bookTranslations[book.name] || book.name
   }));
+
+  // Guardar datos limpios en español en IndexedDB
+  import('./offlineBible').then(({ saveBibleToIndexedDB }) => {
+    saveBibleToIndexedDB(bibleData!).catch(() => { });
+  }).catch(() => { });
 
   return bibleData;
 }
@@ -408,15 +486,42 @@ const bookAliases: Record<string, string> = {
   "flm": "filemon",
   "phm": "filemon",
   "philemon": "filemon",
+  "filemom": "filemon",
   "heb": "hebreos",
   "hb": "hebreos",
   "hebrews": "hebreos",
+  "hebreus": "hebreos",
+  "santiago": "santiago",
+  "tiago": "santiago",
+  "tg": "santiago",
   "stg": "santiago",
   "stgo": "santiago",
   "sant": "santiago",
   "jm": "santiago",
   "jas": "santiago",
   "james": "santiago",
+  "atos": "hechos",
+  "atosdosapostolos": "hechos",
+  "mateus": "mateo",
+  "joao": "juan",
+  "1joao": "1juan",
+  "2joao": "2juan",
+  "3joao": "3juan",
+  "juizes": "jueces",
+  "rute": "rut",
+  "1reis": "1reyes",
+  "2reis": "2reyes",
+  "neemias": "nehemias",
+  "oseias": "oseas",
+  "obadias": "abdias",
+  "miqueias": "miqueas",
+  "habacuque": "habacuc",
+  "ageu": "hageo",
+  "colossenses": "colosenses",
+  "1tessalonicenses": "1tesalonicenses",
+  "2tessalonicenses": "2tesalonicenses",
+  "1timoteo": "1timoteo",
+  "2timoteo": "2timoteo",
   "1ped": "1pedro",
   "2ped": "2pedro",
   "1p": "1pedro",
@@ -442,6 +547,7 @@ const bookAliases: Record<string, string> = {
   "ap": "apocalipsis",
   "apo": "apocalipsis",
   "apoc": "apocalipsis",
+  "apocalipse": "apocalipsis",
   "rev": "apocalipsis",
   "revelation": "apocalipsis"
 };
