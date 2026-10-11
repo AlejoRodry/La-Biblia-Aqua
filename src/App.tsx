@@ -447,7 +447,7 @@ export default function App() {
 
       {/* Global Full-Screen Focus Mode Backdrop - seamlessly covers 100% of the viewport */}
       <div 
-        className={`fixed inset-0 z-[5] bg-black/70 backdrop-blur-2xl transition-all duration-500 ${
+        className={`fixed inset-0 w-screen h-screen min-h-[100dvh] z-[5] bg-black/70 backdrop-blur-2xl transition-all duration-500 ${
           isVerseFocused ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => {

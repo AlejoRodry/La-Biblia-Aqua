@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, BookOpen, ChevronRight, Filter, Sparkles, ChevronLeft, ChevronDown, BookCheck, Search, X, Copy, Check, Heart, MessageSquare, Library, Play, Square, Volume2 } from 'lucide-react';
@@ -128,6 +128,37 @@ export default function BibleResults({
     setFocusedVerse(null);
     setIsEditingComment(false);
   }, [result]);
+
+  const capsuleRef = useRef<HTMLDivElement>(null);
+  const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left: number } | null>(null);
+
+  const updateDropdownCoords = () => {
+    if (!capsuleRef.current) return;
+    const rect = capsuleRef.current.getBoundingClientRect();
+    setDropdownCoords({
+      top: rect.bottom + 8,
+      left: rect.left + rect.width / 2,
+    });
+  };
+
+  useEffect(() => {
+    if (showChapters) {
+      updateDropdownCoords();
+      window.addEventListener('resize', updateDropdownCoords);
+      window.addEventListener('scroll', updateDropdownCoords, true);
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setShowChapters(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('resize', updateDropdownCoords);
+        window.removeEventListener('scroll', updateDropdownCoords, true);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [showChapters, setShowChapters]);
   
   // State for keyword filtering & pagination
   const [selectedBookFilter, setSelectedBookFilter] = useState<string>('all');
@@ -331,7 +362,7 @@ export default function BibleResults({
       {/* Unified Chapter Navigation Capsule (Passage Mode) */}
       {result.type === 'passage' && result.bookName && result.totalChapters && (
         <div className={`flex items-center justify-center relative z-[90] mt-0 mb-1.5 sm:mb-2 transition-all duration-300 ${focusedVerse ? 'opacity-85' : 'opacity-100'}`}>
-          <div className="relative ">
+          <div ref={capsuleRef} className="relative">
             <div className={`flex items-center backdrop-blur-md rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all p-0.5 sm:p-1 border ${
               uiStyle === 'dynamic'
                 ? 'bg-black/80 border-2 border-white/80 transform -skew-x-12'
@@ -356,7 +387,12 @@ export default function BibleResults({
 
               {/* Current Book & Chapter Picker Toggle */}
               <button 
-                onClick={() => setShowChapters(!showChapters)}
+                onClick={() => {
+                  if (!showChapters) {
+                    updateDropdownCoords();
+                  }
+                  setShowChapters(!showChapters);
+                }}
                 className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-white transition-all text-xs sm:text-sm font-semibold active:scale-95 ${
                   showChapters
                     ? 'bg-white/20 text-cyan-200 shadow-inner'
@@ -386,59 +422,71 @@ export default function BibleResults({
                 <ChevronRight size={18} />
               </button>
             </div>
-
-            {/* Chapters Dropdown Modal */}
-            <AnimatePresence>
-              {showChapters && result.totalChapters && (
-                <>
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-[140] bg-black/40 backdrop-blur-sm"
-                    onClick={() => setShowChapters(false)} 
-                  />
-
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 max-h-80 flex flex-col bg-slate-950/40 backdrop-blur-2xl border border-white/20 rounded-2xl p-4 shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.25)] ring-1 ring-white/10 z-[150]"
-                  >
-                    <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/15">
-                      <span className="text-white font-bold tracking-wide text-base">{result.bookName}</span>
-                      <span className="text-xs text-cyan-200/80 font-normal">{result.totalChapters} cap.</span>
-                    </div>
-
-                    <div className="overflow-y-auto custom-scrollbar pr-0.5 grid grid-cols-5 gap-2">
-                      {Array.from({ length: result.totalChapters }).map((_, i) => {
-                        const isCurrent = currentChapterNumber === i + 1;
-                        return (
-                          <button
-                            key={i}
-                            onClick={() => {
-                              setShowChapters(false);
-                              onSearch(`${result.bookName} ${i + 1}`);
-                            }}
-                            className={`w-full aspect-square flex items-center justify-center rounded-xl text-sm transition-all font-semibold ${
-                              isCurrent 
-                                ? 'bg-cyan-400 text-slate-950 font-black shadow-[0_0_14px_rgba(34,211,238,0.7),inset_0_1px_1px_rgba(255,255,255,0.8)] border border-white/80 scale-105' 
-                                : 'bg-white/[0.08] hover:bg-white/[0.2] active:bg-white/[0.3] backdrop-blur-md border border-white/15 hover:border-cyan-400/50 text-white/90 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95'
-                            }`}
-                          >
-                            {i + 1}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
           </div>
         </div>
+      )}
+
+      {/* Chapters Dropdown Modal & Full-Screen Darkening Backdrop (Rendered in Portal directly to document.body to cover 100% of the screen) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showChapters && result.totalChapters && (
+            <div className="fixed inset-0 z-[150] pointer-events-auto">
+              {/* Full-Screen Darkening Backdrop: covers 100% of the viewport seamlessly without ancestor clipping */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 w-screen h-screen min-h-[100dvh] bg-black/60 backdrop-blur-sm z-[150]"
+                onClick={() => setShowChapters(false)} 
+              />
+
+              {/* Dropdown Menu Modal */}
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                style={dropdownCoords ? {
+                  top: `${Math.max(16, Math.min(window.innerHeight - 340, dropdownCoords.top))}px`,
+                  left: `${Math.max(136, Math.min(window.innerWidth - 136, dropdownCoords.left))}px`,
+                } : {
+                  top: '120px',
+                  left: '50%',
+                }}
+                className="fixed -translate-x-1/2 w-64 max-h-[min(340px,calc(100vh-140px))] flex flex-col bg-slate-950/90 backdrop-blur-2xl border border-white/20 rounded-2xl p-4 shadow-[0_16px_40px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.25)] ring-1 ring-white/10 z-[155]"
+              >
+                <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/15">
+                  <span className="text-white font-bold tracking-wide text-base">{result.bookName}</span>
+                  <span className="text-xs text-cyan-200/80 font-normal">{result.totalChapters} cap.</span>
+                </div>
+
+                <div className="overflow-y-auto custom-scrollbar pr-0.5 grid grid-cols-5 gap-2">
+                  {Array.from({ length: result.totalChapters }).map((_, i) => {
+                    const isCurrent = currentChapterNumber === i + 1;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setShowChapters(false);
+                          onSearch(`${result.bookName} ${i + 1}`);
+                        }}
+                        className={`w-full aspect-square flex items-center justify-center rounded-xl text-sm transition-all font-semibold ${
+                          isCurrent 
+                            ? 'bg-cyan-400 text-slate-950 font-black shadow-[0_0_14px_rgba(34,211,238,0.7),inset_0_1px_1px_rgba(255,255,255,0.8)] border border-white/80 scale-105' 
+                            : 'bg-white/[0.08] hover:bg-white/[0.2] active:bg-white/[0.3] backdrop-blur-md border border-white/15 hover:border-cyan-400/50 text-white/90 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
 
       {/* Giant Chapter Number Background (Filling Up) */}
